@@ -60,6 +60,16 @@ Each completed component is committed and pushed to the configured GitHub remote
 
 ## Completion boundary
 
-The v1.1 P0 target is a local CLI, SQLite/FTS5 memory engine, Git-aware staleness, a Claude Code MCP connection, safe agent proposals, hook-based event capture, a human review queue, a deterministic demo, and a retrieval evaluation harness. Optional LLM drafting, embeddings, Antigravity, supersession workflows beyond storage support, and agent-level benchmark claims are not required for this release.
+The implemented runtime covers the v1.1 P0 CLI, SQLite/FTS5 memory engine, Git-aware staleness, Claude Code MCP connection, safe agent proposals, hook-based event capture, human review queue, deterministic demo, and retrieval-metrics runner. The PRD's evaluation experiment is incomplete: this release has no public-issue corpus and does not launch or analyze agent runs. Optional LLM drafting, embeddings, Antigravity, pre-edit recall injection, and a dedicated supersession workflow remain outside this release.
 
 The spec's two-minute install target depends on Python 3.11+, Git, and a supported client already being installed. The first release will document those prerequisites and the supported hook contract rather than promise universal client setup.
+
+## Release review
+
+The core v1.1 workflow is implemented: local initialization, doctor checks, manual episodes, hook event capture, fail-to-pass draft detection, human review, repository and dependency anchors, scoped MCP search/get/propose, and deterministic retrieval metrics. The supported real client is Claude Code. The build and CI use pytest and exercise Python 3.11 and 3.12 on Linux and Windows.
+
+The evaluation requirement is only partially fulfilled. The shipped runner computes Recall@5, MRR, Precision@5, and local retrieval latency from a synthetic corpus. It does not launch coding-agent runs or parse transcripts. The bundled corpus has 12 targets and 30 distractors, but contains no incidents sourced from public issues. No claim about reducing repeated failed attempts or agent tool calls is supported by this fixture.
+
+The product does not implement P1 anchor-triggered pre-edit recall, P1 LLM narrative drafting, P2 semantic embeddings, or P2 retrieval feedback. Supersession is represented in the episode model but has no dedicated review workflow. The Claude Code hooks capture command outcomes; they do not inject context into pre-edit events. Other MCP clients can call the server directly and search with paths.
+
+The release measurements and corpus format are documented in the root README and eval/README.md. They should be replaced or supplemented with the PRD's public-issue corpus and agent-level experiment before making product-effectiveness claims.
