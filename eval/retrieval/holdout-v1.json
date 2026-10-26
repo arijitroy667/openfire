@@ -1,0 +1,273 @@
+{
+  "name": "engbrain-retrieval-holdout-v1",
+  "kind": "issue-derived and synthetic challenge corpus",
+  "notice": "Freshly written retrieval phrasings over the existing 5 simplified public-issue and 7 synthetic incident fixtures. The target incidents are not independent from the Codex fixture corpus; use this as a frozen retrieval challenge, not as evidence from full upstream repositories.",
+  "targets": [
+    {
+      "id": "requests-6071",
+      "source": "https://github.com/psf/requests/issues/6071",
+      "title": "Empty CURL_CA_BUNDLE must retain certificate verification",
+      "type": "debugging",
+      "problem": "A Requests issue showed that CURL_CA_BUNDLE set to the empty string disabled certificate verification. The intended behavior is the same as an unset value: use the default system trust bundle. A non-empty value still selects the configured CA path.",
+      "queries": {
+        "lexical": "Empty CURL_CA_BUNDLE must retain certificate verification A Requests issue showed that CURL_CA_BUNDLE set to the empty string disabled certificate verification. The intended behavior is the same as an unset value: use the default system trust bundle. A non-empty value still selects the configured CA path.",
+        "paraphrase": "An empty trust-bundle override accidentally turns off TLS certificate checking.",
+        "symptom": "HTTPS requests stop validating peers when a deployment variable is set to nothing."
+      }
+    },
+    {
+      "id": "requests-4673",
+      "source": "https://github.com/psf/requests/issues/4673",
+      "title": "Keep urllib3 install and runtime bounds consistent",
+      "type": "debugging",
+      "problem": "Requests allowed urllib3 1.23 in installation metadata while its runtime check still rejected versions above 1.22.",
+      "queries": {
+        "lexical": "Keep urllib3 install and runtime bounds consistent Requests allowed urllib3 1.23 in installation metadata while its runtime check still rejected versions above 1.22.",
+        "paraphrase": "Installing a dependency release succeeds, but importing the package rejects that same release.",
+        "symptom": "A clean install passes dependency resolution and then emits an incompatibility warning at import time."
+      }
+    },
+    {
+      "id": "pytest-12659",
+      "source": "https://github.com/pytest-dev/pytest/issues/12659",
+      "title": "Preserve assertion diffs in importlib package tests",
+      "type": "debugging",
+      "problem": "A pytest regression omitted the assertion explanation when importlib mode loaded a test from a package containing __init__.py.",
+      "queries": {
+        "lexical": "Preserve assertion diffs in importlib package tests A pytest regression omitted the assertion explanation when importlib mode loaded a test from a package containing __init__.py.",
+        "paraphrase": "Package tests loaded through the alternate importer show a bare assertion without expected and actual values.",
+        "symptom": "CI failure output omits the useful diff only for tests inside packages under the alternate load mode."
+      }
+    },
+    {
+      "id": "click-1884",
+      "source": "https://github.com/pallets/click/issues/1884",
+      "title": "Resolve Click version from the installed distribution",
+      "type": "debugging",
+      "problem": "Click's implicit version lookup can infer a callback module name such as cli even when the installed distribution has a different name, so --version fails with PackageNotFoundError.",
+      "queries": {
+        "lexical": "Resolve Click version from the installed distribution Click's implicit version lookup can infer a callback module name such as cli even when the installed distribution has a different name, so --version fails with PackageNotFoundError.",
+        "paraphrase": "The generated version switch looks up metadata under the import module's name and crashes when distribution naming differs.",
+        "symptom": "Running --version raises a missing-package-metadata error even though the application is installed."
+      }
+    },
+    {
+      "id": "click-3059",
+      "source": "https://github.com/pallets/click/issues/3059",
+      "title": "Mark Click group commands optional when invocation can omit them",
+      "type": "debugging",
+      "problem": "A Click group configured with invoke_without_command=True rendered COMMAND as required in its usage synopsis instead of [COMMAND].",
+      "queries": {
+        "lexical": "Mark Click group commands optional when invocation can omit them A Click group configured with invoke_without_command=True rendered COMMAND as required in its usage synopsis instead of [COMMAND].",
+        "paraphrase": "A command group that can run empty still prints a mandatory child-command placeholder.",
+        "symptom": "The usage line wraps COMMAND in no brackets despite a callback that should run without a subcommand."
+      }
+    },
+    {
+      "id": "pool-exhaustion",
+      "source": null,
+      "title": "Allow four concurrent pool workers",
+      "type": "debugging",
+      "problem": "The pool configuration permits one connection while the service runs four concurrent workers.",
+      "queries": {
+        "lexical": "Allow four concurrent pool workers The pool configuration permits one connection while the service runs four concurrent workers.",
+        "paraphrase": "Parallel workers queue forever because the configured connection slots are fewer than active workers.",
+        "symptom": "Load checks hang at four simultaneous jobs while the service has only one DB slot."
+      }
+    },
+    {
+      "id": "cache-deletion",
+      "source": null,
+      "title": "Do not return not-modified for deleted files",
+      "type": "debugging",
+      "problem": "A cached modification timestamp can cause a deleted resource to be treated as unchanged.",
+      "queries": {
+        "lexical": "Do not return not-modified for deleted files A cached modification timestamp can cause a deleted resource to be treated as unchanged.",
+        "paraphrase": "A removed resource still receives a not-modified response because its saved timestamp remains in cache.",
+        "symptom": "A deleted file is reported as unchanged to a client that supplied a cached validator."
+      }
+    },
+    {
+      "id": "environment-precedence",
+      "source": null,
+      "title": "Preserve explicitly empty process environment values",
+      "type": "debugging",
+      "problem": "An explicitly empty process environment value is replaced by a non-empty dotenv fallback.",
+      "queries": {
+        "lexical": "Preserve explicitly empty process environment values An explicitly empty process environment value is replaced by a non-empty dotenv fallback.",
+        "paraphrase": "A blank shell setting is treated as absent, so a dotenv file silently overrides the operator's choice.",
+        "symptom": "Setting a variable to an empty string does not survive configuration loading."
+      }
+    },
+    {
+      "id": "cors-preflight",
+      "source": null,
+      "title": "Return a successful status for CORS preflight",
+      "type": "debugging",
+      "problem": "An OPTIONS preflight inherits a later request's 404 or 503 status and is rejected by the browser.",
+      "queries": {
+        "lexical": "Return a successful status for CORS preflight An OPTIONS preflight inherits a later request's 404 or 503 status and is rejected by the browser.",
+        "paraphrase": "The browser's OPTIONS negotiation inherits an error code from the later resource request.",
+        "symptom": "A cross-origin browser request is blocked because its preliminary request returns the resource's failure status."
+      }
+    },
+    {
+      "id": "queue-ack-order",
+      "source": null,
+      "title": "Acknowledge queue work only after persistence",
+      "type": "debugging",
+      "problem": "A queue item is acknowledged before the durable write succeeds, losing work on persistence errors.",
+      "queries": {
+        "lexical": "Acknowledge queue work only after persistence A queue item is acknowledged before the durable write succeeds, losing work on persistence errors.",
+        "paraphrase": "A broker discards work after the consumer confirms delivery but before the durable write completes.",
+        "symptom": "Messages disappear when persistence raises between delivery and acknowledgment."
+      }
+    },
+    {
+      "id": "timezone-normalization",
+      "source": null,
+      "title": "Normalize naive and aware timestamps to UTC",
+      "type": "debugging",
+      "problem": "Timestamp serialization preserves a local offset instead of producing a stable UTC representation.",
+      "queries": {
+        "lexical": "Normalize naive and aware timestamps to UTC Timestamp serialization preserves a local offset instead of producing a stable UTC representation.",
+        "paraphrase": "Serializing a timestamp keeps its local offset or leaves a timezone-free value ambiguous.",
+        "symptom": "Equivalent instants produce different strings depending on whether the input carried an offset."
+      }
+    },
+    {
+      "id": "sqlite-busy-timeout",
+      "source": null,
+      "title": "Set a bounded SQLite busy timeout",
+      "type": "debugging",
+      "problem": "The connection options use a zero-second lock wait, so brief concurrent writes fail immediately.",
+      "queries": {
+        "lexical": "Set a bounded SQLite busy timeout The connection options use a zero-second lock wait, so brief concurrent writes fail immediately.",
+        "paraphrase": "A brief database lock immediately fails writes instead of allowing a bounded wait.",
+        "symptom": "Concurrent writers fail immediately during a short-lived lock burst."
+      }
+    }
+  ],
+  "distractors": [
+    {
+      "title": "Database connection retry backoff",
+      "problem": "A short jittered backoff prevents a burst of retries when PostgreSQL returns a transient network error."
+    },
+    {
+      "title": "Pool idle connections after deploy",
+      "problem": "Reducing idle lifetime removes server-side connections left behind by old application workers."
+    },
+    {
+      "title": "Database socket file permission",
+      "problem": "The local service account could not open the database socket because its directory permissions were too restrictive."
+    },
+    {
+      "title": "Rotate the database password",
+      "problem": "The deployment secret changed but the connection string in the worker environment was not refreshed."
+    },
+    {
+      "title": "CA bundle missing in slim image",
+      "problem": "The minimal container image omitted the operating system CA certificates needed for outbound HTTPS."
+    },
+    {
+      "title": "Certificate expires in staging",
+      "problem": "The staging server served an expired leaf certificate and failed the browser trust check."
+    },
+    {
+      "title": "TLS minimum version mismatch",
+      "problem": "The old test appliance only negotiated TLS 1.0 while the client required TLS 1.2."
+    },
+    {
+      "title": "Compose service DNS alias",
+      "problem": "A container used localhost instead of the Compose service name when connecting to Redis."
+    },
+    {
+      "title": "Docker image copied wrong config",
+      "problem": "The Docker build copied the development settings file over the production configuration."
+    },
+    {
+      "title": "Container port was not published",
+      "problem": "The application listened on port 8080 inside Docker, but the host port mapping was missing."
+    },
+    {
+      "title": "SQLite read transaction lasted too long",
+      "problem": "A cursor remained open while rendering a report, delaying a writer in another thread."
+    },
+    {
+      "title": "SQLite journal mode on network drive",
+      "problem": "WAL mode behaved poorly on a shared network filesystem and was replaced with a local volume."
+    },
+    {
+      "title": "Unique index migration locked table",
+      "problem": "Building a new unique index took long enough to block writes during deployment."
+    },
+    {
+      "title": "Async task leaked after request",
+      "problem": "A background coroutine was never awaited and logged an exception after the response completed."
+    },
+    {
+      "title": "Async timeout cancelled child request",
+      "problem": "The parent timeout cancelled a child task that was expected to finish its cleanup handler."
+    },
+    {
+      "title": "Thread pool saturated by file reads",
+      "problem": "Large synchronous file reads filled the worker pool and delayed lightweight API handlers."
+    },
+    {
+      "title": "Pytest fixture scope mismatch",
+      "problem": "A module-scoped fixture depended on a function-scoped database fixture and failed setup."
+    },
+    {
+      "title": "Pytest did not collect integration tests",
+      "problem": "The test filename did not match the configured collection pattern, so CI skipped the suite."
+    },
+    {
+      "title": "Import collision with local module",
+      "problem": "A project file named json.py shadowed the Python standard library during test startup."
+    },
+    {
+      "title": "PowerShell path contains spaces",
+      "problem": "A script split a Windows executable path at spaces because the path was not passed as one argument."
+    },
+    {
+      "title": "Shell script used CRLF line endings",
+      "problem": "Git Bash reported a bad interpreter because the script had Windows line endings."
+    },
+    {
+      "title": "Environment variable name typo",
+      "problem": "The worker looked up CACHE_URL while the deployment manifest set REDIS_URL."
+    },
+    {
+      "title": "CORS origin missing scheme",
+      "problem": "The allowlist used a hostname without the https scheme and did not match the browser origin."
+    },
+    {
+      "title": "CORS credentials wildcard rejected",
+      "problem": "The browser refused credentialed requests because the server returned a wildcard origin."
+    },
+    {
+      "title": "Queue visibility timeout too short",
+      "problem": "A long-running job was delivered twice after its visibility timeout expired."
+    },
+    {
+      "title": "Queue poison message retry loop",
+      "problem": "A malformed message exhausted worker capacity because it was retried without a dead-letter policy."
+    },
+    {
+      "title": "Consumer committed offset too early",
+      "problem": "The stream offset advanced before the batch finished, skipping rows after a process crash."
+    },
+    {
+      "title": "UTC display used wrong locale",
+      "problem": "A report rendered UTC timestamps without converting them to the user's selected locale."
+    },
+    {
+      "title": "Daylight saving time duplicated hour",
+      "problem": "A local-time aggregation counted the repeated clock hour twice during the autumn transition."
+    },
+    {
+      "title": "Cache key omitted tenant identifier",
+      "problem": "Two customers shared a cache entry because the tenant ID was not included in the key."
+    }
+  ]
+}

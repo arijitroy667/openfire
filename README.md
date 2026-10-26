@@ -118,6 +118,8 @@ This run uses 12 synthetic target episodes, 30 synthetic distractors, and 24 lex
 
 The runner accepts a custom JSON corpus; the format and metric definitions are in [eval/README.md](eval/README.md). The separate [Codex agent evaluation](eval/codex/README.md) completed 72 sessions on five simplified public-issue fixtures and seven synthetic fixtures. Independent verification passed in 34/36 control runs and 36/36 memory runs. Median tool calls to pass were 5 for control and 7 with memory, so this small study did not show a tool-call reduction. See the [full results and limitations](eval/codex/results-20261026.md); these Codex sessions do not directly measure Claude Code hooks.
 
+A separate frozen query challenge uses the same 12 issue-derived and synthetic incidents with 36 lexical, paraphrase, and symptom queries. The lexical-only retriever achieved Recall@5 of 1.00 for both paraphrase and symptom queries, so this small challenge does not justify embeddings. Its limits are documented in [the retrieval results](eval/retrieval/results-v1.md).
+
 ## Safety and known limits
 
 - Redaction covers common secrets, but cannot guarantee that every sensitive value is removed.
