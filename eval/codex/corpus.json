@@ -1,0 +1,209 @@
+{
+  "name": "engbrain-codex-agent-v1",
+  "description": "Dependency-free bug-fix fixtures derived from five closed public issues and seven synthetic engineering incidents.",
+  "public_issue_minimum": 5,
+  "target_count": 12,
+  "distractor_source": "src/engbrain/data/demo_corpus.json",
+  "distractor_count": 30,
+  "development_cases": [
+    "requests-6071",
+    "requests-4673",
+    "pytest-12659",
+    "click-1884"
+  ],
+  "test_cases": [
+    "click-3059",
+    "pool-exhaustion",
+    "cache-deletion",
+    "environment-precedence",
+    "cors-preflight",
+    "queue-ack-order",
+    "timezone-normalization",
+    "sqlite-busy-timeout"
+  ],
+  "verification_command": ["python3", "-m", "unittest"],
+  "runs_per_condition": 3,
+  "tool_call_cap": 30,
+  "cases": [
+    {
+      "id": "requests-6071",
+      "split": "development",
+      "source": "https://github.com/psf/requests/issues/6071",
+      "source_title": "CURL_CA_BUNDLE= disables certificate verification",
+      "files": ["verify_policy.py", "test_verify_policy.py"],
+      "path": "verify_policy.py",
+      "episode": {
+        "title": "Empty CURL_CA_BUNDLE must retain certificate verification",
+        "problem": "A Requests issue showed that CURL_CA_BUNDLE set to the empty string disabled certificate verification. The intended behavior is the same as an unset value: use the default system trust bundle. A non-empty value still selects the configured CA path.",
+        "context": "Simplified dependency-free fixture derived from Requests issue #6071; closed through fix #6074. Historical context only; verify against current code and tests.",
+        "attempts": ["Checking only whether CURL_CA_BUNDLE is present treats an empty value as an explicit override and can turn verification off. Preserve the default when the value is empty; only a non-empty path should override it."],
+        "solution": "Use a non-empty CURL_CA_BUNDLE path as an override; use the system default for an empty or absent value."
+      }
+    },
+    {
+      "id": "requests-4673",
+      "split": "development",
+      "source": "https://github.com/psf/requests/issues/4673",
+      "source_title": "Inconsistent urllib3 version requirements between setup.py and __init__.py",
+      "files": ["version_constraints.py", "test_version_constraints.py"],
+      "path": "version_constraints.py",
+      "episode": {
+        "title": "Keep urllib3 install and runtime bounds consistent",
+        "problem": "Requests allowed urllib3 1.23 in installation metadata while its runtime check still rejected versions above 1.22.",
+        "context": "Small consistency fixture derived from Requests issue #4673 and fix #4674. It models the version-bound invariant rather than importing Requests.",
+        "attempts": ["Raising only the package installation ceiling leaves the import-time version guard stale and emits a dependency warning."],
+        "solution": "Update the runtime upper bound to match the supported installation upper bound, and keep both constraints sourced consistently."
+      }
+    },
+    {
+      "id": "pytest-12659",
+      "split": "development",
+      "source": "https://github.com/pytest-dev/pytest/issues/12659",
+      "source_title": "pytest >=8.1.1 displays no diff for AssertionError with --import-mode=importlib",
+      "files": ["assertion_report.py", "test_assertion_report.py"],
+      "path": "assertion_report.py",
+      "episode": {
+        "title": "Preserve assertion diffs in importlib package tests",
+        "problem": "A pytest regression omitted the assertion explanation when importlib mode loaded a test from a package containing __init__.py.",
+        "context": "Dependency-free output fixture derived from pytest issue #12659, closed through #12716. It represents the reported package/import-mode combination only.",
+        "attempts": ["Suppressing assertion rewriting for package modules loaded with importlib removes the useful expected-versus-actual diff."],
+        "solution": "Keep the assertion explanation enabled for importlib-loaded tests inside packages."
+      }
+    },
+    {
+      "id": "click-1884",
+      "split": "development",
+      "source": "https://github.com/pallets/click/issues/1884",
+      "source_title": "version_option doesn't automatically detect version anymore with click 8.0.0",
+      "files": ["version_option.py", "test_version_option.py"],
+      "path": "version_option.py",
+      "episode": {
+        "title": "Resolve Click version from the installed distribution",
+        "problem": "Click's implicit version lookup can infer a callback module name such as cli even when the installed distribution has a different name, so --version fails with PackageNotFoundError.",
+        "context": "Dependency-free behavior fixture derived from Click issue #1884. The installed distribution name and callback module name are deliberately different.",
+        "attempts": ["Looking up metadata only from the callback function's module name can miss the installed distribution."],
+        "solution": "Resolve an installed distribution associated with the command entry point, or require an explicit package name when inference is ambiguous."
+      }
+    },
+    {
+      "id": "click-3059",
+      "split": "test",
+      "source": "https://github.com/pallets/click/issues/3059",
+      "source_title": "With invoke_without_command set, commands are not marked as optional",
+      "files": ["group_usage.py", "test_group_usage.py"],
+      "path": "group_usage.py",
+      "episode": {
+        "title": "Mark Click group commands optional when invocation can omit them",
+        "problem": "A Click group configured with invoke_without_command=True rendered COMMAND as required in its usage synopsis instead of [COMMAND].",
+        "context": "Small usage-format fixture derived from Click issue #3059 and its completion in #3507.",
+        "attempts": ["Rendering every subcommand token as required ignores invoke_without_command."],
+        "solution": "Use [COMMAND] in the synopsis when invoke_without_command is enabled."
+      }
+    },
+    {
+      "id": "pool-exhaustion",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic connection pool exhaustion fixture",
+      "files": ["pool_config.py", "test_pool_config.py"],
+      "path": "pool_config.py",
+      "episode": {
+        "title": "Allow four concurrent pool workers",
+        "problem": "The pool configuration permits one connection while the service runs four concurrent workers.",
+        "context": "Synthetic local engineering incident modeled on the repository demo fixture.",
+        "attempts": ["Increasing request timeouts does not add pool capacity."],
+        "solution": "Raise the pool limit to at least the four concurrent workers and rerun the pool check."
+      }
+    },
+    {
+      "id": "cache-deletion",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic deleted-file cache validation fixture",
+      "files": ["cache_validation.py", "test_cache_validation.py"],
+      "path": "cache_validation.py",
+      "episode": {
+        "title": "Do not return not-modified for deleted files",
+        "problem": "A cached modification timestamp can cause a deleted resource to be treated as unchanged.",
+        "context": "Synthetic local fixture for stale cache validators after file deletion.",
+        "attempts": ["Comparing timestamps without checking that the resource still exists can incorrectly return 304."],
+        "solution": "Require the resource to exist before honoring a not-modified validator."
+      }
+    },
+    {
+      "id": "environment-precedence",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic empty environment value precedence fixture",
+      "files": ["environment_config.py", "test_environment_config.py"],
+      "path": "environment_config.py",
+      "episode": {
+        "title": "Preserve explicitly empty process environment values",
+        "problem": "An explicitly empty process environment value is replaced by a non-empty dotenv fallback.",
+        "context": "Synthetic local configuration precedence incident; values are inert fixture strings.",
+        "attempts": ["Using truthiness instead of variable presence makes an explicit blank value indistinguishable from an unset value."],
+        "solution": "When a variable is present in the process environment, honor its value even when it is empty; only fall back when absent."
+      }
+    },
+    {
+      "id": "cors-preflight",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic CORS preflight status fixture",
+      "files": ["cors_response.py", "test_cors_response.py"],
+      "path": "cors_response.py",
+      "episode": {
+        "title": "Return a successful status for CORS preflight",
+        "problem": "An OPTIONS preflight inherits a later request's 404 or 503 status and is rejected by the browser.",
+        "context": "Synthetic local HTTP behavior fixture with no network server.",
+        "attempts": ["Copying the actual response status into a preflight response couples two separate requests."],
+        "solution": "Return a successful 204 preflight status independently of the eventual resource response."
+      }
+    },
+    {
+      "id": "queue-ack-order",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic durable queue acknowledgement fixture",
+      "files": ["queue_worker.py", "test_queue_worker.py"],
+      "path": "queue_worker.py",
+      "episode": {
+        "title": "Acknowledge queue work only after persistence",
+        "problem": "A queue item is acknowledged before the durable write succeeds, losing work on persistence errors.",
+        "context": "Synthetic local callable-based fixture; it does not connect to a broker or database.",
+        "attempts": ["Acknowledging before persistence makes a failed write unrecoverable from the queue."],
+        "solution": "Persist first and acknowledge only after the persistence operation succeeds."
+      }
+    },
+    {
+      "id": "timezone-normalization",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic UTC timestamp normalization fixture",
+      "files": ["timestamp_utils.py", "test_timestamp_utils.py"],
+      "path": "timestamp_utils.py",
+      "episode": {
+        "title": "Normalize naive and aware timestamps to UTC",
+        "problem": "Timestamp serialization preserves a local offset instead of producing a stable UTC representation.",
+        "context": "Synthetic local datetime fixture using fixed values only.",
+        "attempts": ["Calling isoformat directly preserves the input timezone and leaves naive timestamps ambiguous."],
+        "solution": "Treat naive values according to the documented UTC convention, convert aware values to UTC, and serialize with a UTC marker."
+      }
+    },
+    {
+      "id": "sqlite-busy-timeout",
+      "split": "test",
+      "source": null,
+      "source_title": "Synthetic SQLite busy timeout configuration fixture",
+      "files": ["sqlite_options.py", "test_sqlite_options.py"],
+      "path": "sqlite_options.py",
+      "episode": {
+        "title": "Set a bounded SQLite busy timeout",
+        "problem": "The connection options use a zero-second lock wait, so brief concurrent writes fail immediately.",
+        "context": "Synthetic local option fixture; it checks configuration without starting a contending database workload.",
+        "attempts": ["Retrying the application operation without setting SQLite's busy timeout leaves the lock wait unchanged."],
+        "solution": "Configure a bounded five-second connection timeout for transient SQLite locks."
+      }
+    }
+  ]
+}

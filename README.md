@@ -102,7 +102,7 @@ engbrain eval --json
 
 This run uses 12 synthetic target episodes, 30 synthetic distractors, and 24 lexical/paraphrase queries. On the local run recorded for this release, lexical Recall@5 was 1.00 (n=12) and paraphrase Recall@5 was 0.75 (n=12); the corresponding MRR values were 1.00 and 0.542. These are measurements of a small synthetic fixture, not public-issue data or agent behavior. They do not establish that EngBrain reduces failed attempts.
 
-The runner accepts a custom JSON corpus; the format and metric definitions are in [eval/README.md](eval/README.md). No agent-level runs or public-issue benchmark are included in this release.
+The runner accepts a custom JSON corpus; the format and metric definitions are in [eval/README.md](eval/README.md). The separate [Codex agent evaluation](eval/codex/README.md) has five simplified public-issue fixtures, seven synthetic fixtures, and a harness for 72 controlled runs. Its two-run setup pilot passed both conditions on one public-issue fixture; this is a harness check only, not evidence that memory improves agent outcomes. The full experiment remains to be run.
 
 ## Safety and known limits
 

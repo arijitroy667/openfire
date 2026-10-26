@@ -60,7 +60,7 @@ Each completed component is committed and pushed to the configured GitHub remote
 
 ## Completion boundary
 
-The implemented runtime covers the v1.1 P0 CLI, SQLite/FTS5 memory engine, Git-aware staleness, Claude Code MCP connection, safe agent proposals, hook-based event capture, human review queue, deterministic demo, and retrieval-metrics runner. The PRD's evaluation experiment is incomplete: this release has no public-issue corpus and does not launch or analyze agent runs. The P1 Claude Code Edit/Write pre-tool hook injects at most three anchored episodes when available; other MCP clients can search with paths.
+The implemented runtime covers the v1.1 P0 CLI, SQLite/FTS5 memory engine, Git-aware staleness, Claude Code MCP connection, safe agent proposals, hook-based event capture, human review queue, deterministic demo, and retrieval-metrics runner. A separate Codex evaluation corpus and runner now provide 12 isolated fixtures (five simplified public-issue reproductions and seven synthetic incidents), a control/memory setup, and a 72-run plan. The full 72 runs and result analysis remain outstanding; the initial two-run pilot is only a setup check. The P1 Claude Code Edit/Write pre-tool hook injects at most three anchored episodes when available; other MCP clients can search with paths.
 
 The spec's two-minute install target depends on Python 3.11+, Git, and a supported client already being installed. The first release will document those prerequisites and the supported hook contract rather than promise universal client setup.
 
@@ -68,8 +68,8 @@ The spec's two-minute install target depends on Python 3.11+, Git, and a support
 
 The core v1.1 workflow is implemented: local initialization, doctor checks, manual episodes, hook event capture, fail-to-pass draft detection, human review, repository and dependency anchors, scoped MCP search/get/propose, and deterministic retrieval metrics. The supported real client is Claude Code. The build and CI use pytest and exercise Python 3.11 and 3.12 on Linux and Windows.
 
-The evaluation requirement is only partially fulfilled. The shipped runner computes Recall@5, MRR, Precision@5, and local retrieval latency from a synthetic corpus. It does not launch coding-agent runs or parse transcripts. The bundled corpus has 12 targets and 30 distractors, but contains no incidents sourced from public issues. No claim about reducing repeated failed attempts or agent tool calls is supported by this fixture.
+The retrieval runner computes Recall@5, MRR, Precision@5, and local retrieval latency from a synthetic corpus. The separate Codex harness launches isolated control and EngBrain-memory sessions, parses tool/verifier events, and independently checks each final patch. Its five public-issue cases are small behavioral reproductions, not full upstream projects; the other seven are synthetic. The full 72-run evaluation is not complete, so the pilot does not support a claim about reducing repeated failed attempts or agent tool calls.
 
 The product does not implement P1 LLM narrative drafting or P2 semantic embeddings. Human-approved supersession and local retrieval feedback are available through the CLI. Feedback is stored against the most recent search that returned the episode; it does not adjust ranking. The Claude Code pre-edit hook is synchronous, has a three-second timeout, and only targets Edit/Write calls with file paths.
 
-The release measurements and corpus format are documented in the root README and eval/README.md. They should be replaced or supplemented with the PRD's public-issue corpus and agent-level experiment before making product-effectiveness claims.
+The retrieval measurements and corpus format are documented in the root README and eval/README.md. Agent experiment setup, fixture provenance, and run instructions are in eval/codex/README.md. Complete and analyze the 72 runs before making product-effectiveness claims.
