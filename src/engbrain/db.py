@@ -95,6 +95,7 @@ def initialize_database(db_path: Path) -> None:
             CREATE INDEX IF NOT EXISTS idx_episodes_signature ON episodes(project_id, error_signature);
             CREATE INDEX IF NOT EXISTS idx_anchors_episode ON episode_anchors(episode_id);
             CREATE INDEX IF NOT EXISTS idx_anchors_value ON episode_anchors(kind, value);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_anchor_unique ON episode_anchors(episode_id, kind, value);
             CREATE INDEX IF NOT EXISTS idx_events_session ON events(project_id, session_id, created_at);
             CREATE VIRTUAL TABLE IF NOT EXISTS episodes_fts USING fts5(
                 episode_id UNINDEXED,

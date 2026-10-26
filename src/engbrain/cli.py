@@ -12,6 +12,7 @@ from engbrain.config import database_path, initialize_project, load_project
 from engbrain.db import database_integrity, fts5_available
 from engbrain.engine import create_episode, edit_draft, episode_anchors, get_episode, list_episodes, review_draft
 from engbrain.models import Attempt, EpisodeDraft, EpisodeStatus, EpisodeType, ReviewState
+from engbrain.staleness import compute_staleness
 
 app = typer.Typer(help="Local-first episodic engineering memory for coding agents.")
 episode_app = typer.Typer(help="Create and inspect engineering episodes.")
@@ -128,6 +129,10 @@ def episode_create(
     episode_type: EpisodeType = typer.Option(EpisodeType.DEBUGGING, "--type", help="Episode category."),
     context: str = typer.Option("", "--context", help="Relevant environment or repository context."),
     attempts: list[str] | None = typer.Option(None, "--attempt", help="Attempt text; repeat for multiple attempts."),
+    paths: list[str] | None = typer.Option(None, "--path", help="Repository-relative file anchor; repeat as needed."),
+    dependencies: list[str] | None = typer.Option(
+        None, "--dependency", help="Dependency anchor name or name==version; repeat as needed."
+    ),
     solution: str | None = typer.Option(None, "--solution", help="What ultimately worked, if known."),
     verification: str | None = typer.Option(None, "--verification", help="How the result was checked."),
 ) -> None:
@@ -153,7 +158,7 @@ def episode_create(
             verification_text=verification,
             review_state=ReviewState.ACCEPTED,
         )
-        episode = create_episode(load_project(), draft)
+        episode = create_episode(load_project(), draft, paths=paths, dependencies=dependencies)
         typer.echo(f"Created {episode.status.value} episode {episode.id}: {episode.title}")
     except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
         _fail(str(exc))
@@ -184,7 +189,13 @@ def episode_list(
 def episode_show(episode_id: str) -> None:
     """Show an episode's content, evidence, provenance, and anchors."""
     try:
-        _display_episode(get_episode(load_project(), episode_id))
+        project = load_project()
+        episode = get_episode(project, episode_id)
+        _display_episode(episode)
+        result = compute_staleness(project, episode)
+        typer.echo(f"Staleness: {result.staleness.value}")
+        for reason in result.staleness_reasons:
+            typer.echo(f"  - {reason}")
     except (OSError, ValueError, sqlite3.Error) as exc:
         _fail(str(exc))
 

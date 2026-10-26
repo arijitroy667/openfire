@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 import sqlite3
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 from engbrain.config import database_path
 from engbrain.db import transaction
+from engbrain.dependencies import dependency_snapshot, parse_dependency_anchor
 from engbrain.models import (
     Episode,
     EpisodeDraft,
@@ -18,6 +20,7 @@ from engbrain.models import (
     utc_now,
 )
 from engbrain.redaction import redact_text
+from engbrain.staleness import current_commit
 
 
 def _redact_value(value: Any) -> Any:
@@ -123,12 +126,44 @@ def _query_episode(connection: sqlite3.Connection, project: Project, episode_id:
     return _episode_from_row(row)
 
 
-def create_episode(project: Project, draft: EpisodeDraft) -> Episode:
+def create_episode(
+    project: Project,
+    draft: EpisodeDraft,
+    *,
+    paths: list[str] | None = None,
+    dependencies: list[str] | None = None,
+) -> Episode:
     safe_data = _redact_value(draft.model_dump(mode="json"))
     safe_data["status"] = EpisodeStatus.UNVERIFIED.value
+    captured_commit = current_commit(Path(project.repo_root))
     episode = Episode.model_validate({**safe_data, "project_id": project.id})
     with transaction(database_path(project)) as connection:
         _save_episode(connection, episode)
+        if captured_commit:
+            connection.execute(
+                "INSERT INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,NULL)",
+                (uuid4().hex, episode.id, "commit", captured_commit),
+            )
+        root = Path(project.repo_root).resolve()
+        for value in paths or []:
+            candidate = (root / value).resolve()
+            try:
+                relative = candidate.relative_to(root).as_posix()
+            except ValueError as exc:
+                raise ValueError(f"Path anchor must be inside the repository: {value}") from exc
+            if not relative or relative == ".":
+                raise ValueError("A path anchor must name a file inside the repository")
+            connection.execute(
+                "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,NULL)",
+                (uuid4().hex, episode.id, "path", relative),
+            )
+        snapshot = dependency_snapshot(root)
+        for value in dependencies or []:
+            name, version = parse_dependency_anchor(value, snapshot)
+            connection.execute(
+                "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,?)",
+                (uuid4().hex, episode.id, "dependency", name, version),
+            )
     return episode
 
 
@@ -168,8 +203,17 @@ def review_draft(project: Project, episode_id: str, *, accept: bool) -> Episode:
         status = EpisodeStatus.UNVERIFIED
         if accept and episode.evidence_kind.value == "mechanical" and _has_successful_mechanical_evidence(episode.evidence):
             status = EpisodeStatus.VERIFIED
+        commit = connection.execute(
+            "SELECT value FROM episode_anchors WHERE episode_id = ? AND kind = 'commit' ORDER BY rowid LIMIT 1",
+            (episode.id,),
+        ).fetchone()
         updated = episode.model_copy(
-            update={"review_state": new_state, "status": status, "updated_at": utc_now()}
+            update={
+                "review_state": new_state,
+                "status": status,
+                "verified_at_sha": commit["value"] if status == EpisodeStatus.VERIFIED and commit else None,
+                "updated_at": utc_now(),
+            }
         )
         _save_episode(connection, updated)
         return updated
