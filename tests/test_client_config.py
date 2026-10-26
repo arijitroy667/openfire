@@ -28,3 +28,8 @@ def test_claude_code_setup_preserves_config_and_is_idempotent(git_project, monke
         matching = [entry for entry in configured if entry.get("matcher") == "Bash|PowerShell"]
         assert len(matching) == 1
         assert matching[0]["hooks"][0]["async"] is True
+    pre_tool = hooks_config["hooks"]["PreToolUse"]
+    matching = [entry for entry in pre_tool if entry.get("matcher") == "Edit|Write"]
+    assert len(matching) == 1
+    assert matching[0]["hooks"][0]["timeout"] == 3
+    assert "async" not in matching[0]["hooks"][0]

@@ -44,39 +44,66 @@ def _is_engbrain_entry(value: Any) -> bool:
     return "engbrain" in command or "engbrain" in args
 
 
+def _upsert_hook(
+    hooks: dict[str, Any],
+    *,
+    event_name: str,
+    matcher: str,
+    hook: dict[str, Any],
+) -> None:
+    entries = hooks.setdefault(event_name, [])
+    if not isinstance(entries, list):
+        raise ValueError(f"Claude Code {event_name} hooks must be a JSON array")
+    target = next(
+        (entry for entry in entries if isinstance(entry, dict) and entry.get("matcher") == matcher),
+        None,
+    )
+    if target is None:
+        entries.append({"matcher": matcher, "hooks": [hook.copy()]})
+        return
+    configured = target.setdefault("hooks", [])
+    if not isinstance(configured, list):
+        raise ValueError(f"Claude Code {event_name} hook entry has an invalid hooks list")
+    if not any(
+        isinstance(item, dict)
+        and item.get("type") == "command"
+        and item.get("command") == hook["command"]
+        and item.get("args") == hook["args"]
+        for item in configured
+    ):
+        configured.append(hook.copy())
+
+
 def _upsert_hooks(settings: dict[str, Any], command: str) -> None:
     hooks = settings.setdefault("hooks", {})
     if not isinstance(hooks, dict):
         raise ValueError("Claude Code hooks setting must be a JSON object")
-    hook = {
+    capture_hook = {
         "type": "command",
         "command": command,
         "args": ["hook", "event"],
         "async": True,
         "timeout": 10,
     }
+    recall_hook = {
+        "type": "command",
+        "command": command,
+        "args": ["hook", "event"],
+        "timeout": 3,
+    }
     for event_name in ("PostToolUse", "PostToolUseFailure"):
-        entries = hooks.setdefault(event_name, [])
-        if not isinstance(entries, list):
-            raise ValueError(f"Claude Code {event_name} hooks must be a JSON array")
-        target = next(
-            (entry for entry in entries if isinstance(entry, dict) and entry.get("matcher") == "Bash|PowerShell"),
-            None,
+        _upsert_hook(
+            hooks,
+            event_name=event_name,
+            matcher="Bash|PowerShell",
+            hook=capture_hook,
         )
-        if target is None:
-            entries.append({"matcher": "Bash|PowerShell", "hooks": [hook.copy()]})
-            continue
-        configured = target.setdefault("hooks", [])
-        if not isinstance(configured, list):
-            raise ValueError(f"Claude Code {event_name} hook entry has an invalid hooks list")
-        if not any(
-            isinstance(item, dict)
-            and item.get("type") == "command"
-            and item.get("command") == command
-            and item.get("args") == hook["args"]
-            for item in configured
-        ):
-            configured.append(hook.copy())
+    _upsert_hook(
+        hooks,
+        event_name="PreToolUse",
+        matcher="Edit|Write",
+        hook=recall_hook,
+    )
 
 
 def configure_claude_code(project: Project) -> list[Path]:
@@ -115,11 +142,16 @@ def claude_code_status(project: Project) -> tuple[bool, bool]:
     settings = _read_json(root / ".claude" / "settings.local.json")
     hooks = settings.get("hooks", {})
     hooks_ok = isinstance(hooks, dict)
-    for event_name in ("PostToolUse", "PostToolUseFailure"):
+    required = {
+        "PostToolUse": "Bash|PowerShell",
+        "PostToolUseFailure": "Bash|PowerShell",
+        "PreToolUse": "Edit|Write",
+    }
+    for event_name, matcher in required.items():
         entries = hooks.get(event_name, []) if hooks_ok else []
         event_ok = any(
             isinstance(entry, dict)
-            and entry.get("matcher") == "Bash|PowerShell"
+            and entry.get("matcher") == matcher
             and any(
                 isinstance(item, dict)
                 and item.get("type") == "command"
@@ -145,7 +177,7 @@ def claude_code_setup_present(project: Project) -> bool:
     hooks = settings.get("hooks", {})
     if not isinstance(hooks, dict):
         return False
-    for event_name in ("PostToolUse", "PostToolUseFailure"):
+    for event_name in ("PostToolUse", "PostToolUseFailure", "PreToolUse"):
         for entry in hooks.get(event_name, []):
             if not isinstance(entry, dict):
                 continue

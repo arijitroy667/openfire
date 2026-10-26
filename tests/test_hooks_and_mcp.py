@@ -8,8 +8,10 @@ from mcp import Client
 from engbrain.config import database_path
 from engbrain.db import transaction
 from engbrain.engine import get_episode, review_draft
+from engbrain.engine import create_episode
 from engbrain.hooks import handle_hook_payload
 from engbrain.mcp_server import create_server
+from engbrain.models import EpisodeDraft, EpisodeType
 from engbrain.retrieval import search_memory
 
 
@@ -53,6 +55,54 @@ def test_sensitive_commands_are_not_captured(git_project):
     assert handle_hook_payload(payload) is None
     with transaction(database_path(project)) as connection:
         assert connection.execute("SELECT COUNT(*) FROM events").fetchone()[0] == 0
+
+
+def test_pre_edit_hook_injects_at_most_three_scoped_anchor_matches(git_project):
+    root, project = git_project
+    anchored_file = root / "src" / "pool_manager.py"
+    anchored_file.parent.mkdir(parents=True, exist_ok=True)
+    anchored_file.write_text("MAX_POOL = 4\n", encoding="utf-8")
+    for index in range(4):
+        create_episode(
+            project,
+            EpisodeDraft(
+                title=f"Pool manager incident {index}",
+                episode_type=EpisodeType.DEBUGGING,
+                problem="A pool manager exhausted available connections under load.",
+            ),
+            paths=["src/pool_manager.py"],
+        )
+    response = handle_hook_payload(
+        {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Edit",
+            "tool_input": {"file_path": str(anchored_file)},
+            "cwd": str(root),
+            "session_id": "test-session",
+        }
+    )
+    assert response is not None
+    context = response["hookSpecificOutput"]["additionalContext"]
+    assert response["hookSpecificOutput"]["hookEventName"] == "PreToolUse"
+    assert "untrusted historical data" in context
+    assert context.count('"title"') == 3
+
+
+def test_pre_edit_hook_fails_open_for_outside_paths_and_secret_files(git_project):
+    root, _ = git_project
+    outside = root.parent / "outside.py"
+    secret = root / ".env.production"
+    for path in (outside, secret):
+        response = handle_hook_payload(
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Write",
+                "tool_input": {"file_path": str(path)},
+                "cwd": str(root),
+                "session_id": "test-session",
+            }
+        )
+        assert response is None
 
 
 def test_mcp_exposes_search_get_propose_with_review_gate(git_project):

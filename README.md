@@ -13,7 +13,7 @@ Engineering reasoning disappears between coding sessions. Developers and agents 
 1. Asynchronous Claude Code hooks capture supported shell command outcomes locally. Likely secrets are redacted before persistence and event tails expire after seven days.
 2. Two or more failures followed by a successful run of the same normalized command create a draft episode with the observed commands, exit codes, and a safe diff summary.
 3. A person reviews, edits, accepts, or rejects drafts. Only accepted episodes are searchable; mechanically captured evidence can become verified after human acceptance.
-4. CLI or MCP search combines FTS5 text, normalized error signatures, and file or dependency anchors with reciprocal-rank fusion. Results include computed freshness reasons.
+4. When Claude Code is about to use Edit or Write on a file, a pre-tool hook searches its path anchors and injects up to three matching episodes with freshness reasons. CLI or MCP search also combines FTS5 text, normalized error signatures, and file or dependency anchors with reciprocal-rank fusion.
 5. Agents can propose an episode, but proposals stay unverified drafts. EngBrain never executes a retrieved command.
 
 ## Architecture
@@ -79,7 +79,7 @@ engbrain recall --query "pool exhausted by parallel requests" --query "connectio
 
 Manual episodes are accepted but remain unverified unless they carry mechanical evidence. Hook-created and MCP-proposed records begin as drafts. Use **engbrain review reject EPISODE_ID** to reject a draft.
 
-The supported client in this release is Claude Code. EngBrain uses its [command hooks](https://code.claude.com/docs/en/hooks) and project [MCP configuration](https://code.claude.com/docs/en/mcp). Other MCP clients can run **engbrain mcp serve --root REPOSITORY_PATH** using stdio and call **search_episodes**, **get_episode**, and **propose_episode**. The MCP server returns no event output tails.
+The supported hook client in this release is Claude Code. EngBrain uses its [command hooks](https://code.claude.com/docs/en/hooks) and project [MCP configuration](https://code.claude.com/docs/en/mcp). The pre-edit hook is synchronous so Claude Code can add its context before the tool call; its timeout is three seconds, and it fails open when no safe matches are available. Other MCP clients can run **engbrain mcp serve --root REPOSITORY_PATH** using stdio and call **search_episodes**, **get_episode**, and **propose_episode**. The MCP server returns no event output tails.
 
 ## Demo
 
@@ -106,7 +106,8 @@ The runner accepts a custom JSON corpus; the format and metric definitions are i
 - Staleness may be unknown when Git history is unavailable or anchors are missing. Recognized dependency manifests are listed in the build record.
 - Retrieval is lexical with error-signature and anchor matching. Paraphrase recall is not guaranteed.
 - Data is local and project-scoped; there is no team sync, dashboard, or remote database.
-- Anchor-triggered pre-edit recall, semantic embeddings, LLM drafting, and retrieval feedback are not implemented.
+- The pre-edit hook matches Claude Code Edit and Write calls. Other MCP clients can use the paths parameter as a fallback.
+- Semantic embeddings, LLM drafting, and retrieval feedback are not implemented.
 
 ## Development
 

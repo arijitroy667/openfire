@@ -81,10 +81,10 @@ def doctor() -> None:
         setup_present = claude_code_setup_present(project)
         if mcp_registered and hooks_registered:
             checks.append(("Claude Code MCP", True, "registered"))
-            checks.append(("Claude Code capture hooks", True, "registered"))
+            checks.append(("Claude Code hooks", True, "capture and pre-edit recall registered"))
         elif setup_present:
             checks.append(("Claude Code MCP", mcp_registered, "registered and available" if mcp_registered else "missing or command is not on PATH"))
-            checks.append(("Claude Code capture hooks", hooks_registered, "registered and available" if hooks_registered else "missing or command is not on PATH"))
+            checks.append(("Claude Code hooks", hooks_registered, "registered and available" if hooks_registered else "missing or command is not on PATH"))
         else:
             typer.echo("SKIP  Claude Code MCP/hooks: optional; enable with `engbrain init --client claude-code`")
     except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
@@ -191,11 +191,13 @@ def mcp_serve(
 
 @hook_app.command("event")
 def hook_event() -> None:
-    """Read a Claude Code hook JSON payload from stdin and capture supported commands."""
+    """Read a Claude Code hook JSON payload from stdin and handle supported events."""
     from engbrain.hooks import handle_stdin
 
     try:
-        handle_stdin()
+        response = handle_stdin()
+        if isinstance(response, dict):
+            typer.echo(json.dumps(response, ensure_ascii=False))
     except Exception:
         # Capture is best-effort and must not interrupt the developer's agent session.
         return
