@@ -312,6 +312,36 @@ def episode_create(
         _fail(str(exc))
 
 
+@episode_app.command("draft")
+def episode_draft(
+    notes: str = typer.Option(..., "--notes", help="Incident notes to redact and send for narrative drafting."),
+    episode_type: EpisodeType = typer.Option(EpisodeType.DEBUGGING, "--type", help="Episode category."),
+    paths: list[str] | None = typer.Option(None, "--path", help="Repository-relative file anchor; repeat as needed."),
+    model: str | None = typer.Option(None, "--model", help="OpenAI model; defaults to ENGBRAIN_OPENAI_MODEL."),
+) -> None:
+    """Use the optional OpenAI adapter to create an unaccepted, reviewable draft."""
+    from engbrain.narrative import NarrativeDraftError, draft_episode_narrative
+
+    try:
+        narrative = draft_episode_narrative(notes, model=model)
+        draft = EpisodeDraft(
+            title=narrative.title,
+            episode_type=episode_type,
+            problem=narrative.problem,
+            context=narrative.context,
+            attempts=[Attempt(description=value) for value in narrative.attempts],
+            solution_taken=narrative.solution_taken,
+            rejected_alternatives=narrative.rejected_alternatives,
+            verification_text=narrative.verification_text,
+            review_state=ReviewState.DRAFT,
+        )
+        episode = create_episode(load_project(), draft, paths=paths)
+        typer.echo(f"Created LLM-assisted review draft {episode.id}: {episode.title}")
+        typer.echo("Review its facts and evidence with `engbrain review` before accepting it.")
+    except (NarrativeDraftError, OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
+        _fail(str(exc))
+
+
 @episode_app.command("list")
 def episode_list(
     limit: int = typer.Option(20, min=1, max=100, help="Maximum episodes to show."),

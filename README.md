@@ -81,6 +81,17 @@ engbrain feedback EPISODE_ID helpful
 
 Manual episodes are accepted but remain unverified unless they carry mechanical evidence. Hook-created and MCP-proposed records begin as drafts. Use **engbrain review reject EPISODE_ID** to reject a draft.
 
+### Optional LLM narrative draft
+
+The core stays offline. To enable OpenAI-assisted drafting, install `uv sync --extra llm` and set `OPENAI_API_KEY`; optionally set `ENGBRAIN_OPENAI_MODEL`. Then run:
+
+~~~powershell
+engbrain episode draft --notes "Two workers failed to acquire a connection. Increasing the request timeout did not help. After raising the pool limit, the check passed." --path src/pool.py
+engbrain review
+~~~
+
+The adapter sends only the supplied notes after best-effort secret redaction. The model may suggest narrative fields, but the generated record is saved as an unverified draft and stays out of search until a person reviews and accepts it. The core package does not require the OpenAI SDK or an API key.
+
 Create and accept the replacement episode before superseding an older accepted record. The old episode remains available for inspection but leaves search results; the new record keeps a link to the old one.
 
 After a recall, record whether a result helped with **engbrain feedback EPISODE_ID helpful** or **engbrain feedback EPISODE_ID not-helpful**. Feedback is stored locally and does not change ranking automatically.
@@ -113,7 +124,8 @@ The runner accepts a custom JSON corpus; the format and metric definitions are i
 - Retrieval is lexical with error-signature and anchor matching. Paraphrase recall is not guaranteed.
 - Data is local and project-scoped; there is no team sync, dashboard, or remote database.
 - The pre-edit hook matches Claude Code Edit and Write calls. Other MCP clients can use the paths parameter as a fallback.
-- Semantic embeddings and LLM drafting are not implemented.
+- Semantic embeddings are not implemented; the current synthetic paraphrase benchmark meets the PRD threshold, and stronger data is still needed to justify this added dependency.
+- LLM drafting is optional, requires the separate `llm` extra and an OpenAI API key, and sends redacted incident notes to the configured OpenAI API after the developer invokes the command.
 
 ## Development
 
