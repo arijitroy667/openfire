@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 import subprocess
 import sys
@@ -113,6 +114,38 @@ def status() -> None:
         typer.echo(f"Database: {db_path}")
     except (OSError, ValueError, sqlite3.Error) as exc:
         _fail(str(exc))
+
+
+@app.command("eval")
+def evaluate_retrieval(
+    dataset: Path | None = typer.Option(
+        None, "--dataset", help="JSON corpus file; defaults to the bundled synthetic corpus."
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Print the complete metrics as JSON."),
+) -> None:
+    """Measure Recall@5, MRR, Precision@5, and p95 retrieval latency locally."""
+    try:
+        from engbrain.evaluation import run_retrieval_evaluation
+
+        result = run_retrieval_evaluation(dataset)
+    except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
+        _fail(str(exc))
+    if json_output:
+        typer.echo(json.dumps(result, indent=2, ensure_ascii=False))
+        return
+    typer.echo(f"Corpus: {result['dataset']} ({result['corpus_kind']})")
+    typer.echo(
+        f"Episodes: {result['target_episodes']} targets, {result['distractor_episodes']} distractors; "
+        f"queries: {result['query_count']}"
+    )
+    for query_type, metrics in result["retrieval_metrics"].items():
+        typer.echo(
+            f"{query_type}: n={metrics['n']} Recall@5={metrics['recall_at_5']:.3f} "
+            f"MRR={metrics['mrr']:.3f} Precision@5={metrics['precision_at_5']:.3f}"
+        )
+    typer.echo(f"Search latency p95: {result['latency_ms']['p95']:.3f} ms")
+    if result["notice"]:
+        typer.echo(f"Note: {result['notice']}")
 
 
 @app.command()
