@@ -27,7 +27,10 @@ from engbrain.models import Attempt, EpisodeDraft, EpisodeStatus, EpisodeType, R
 from engbrain.staleness import compute_staleness
 from engbrain.retrieval import search_memory
 
-app = typer.Typer(help="Local-first episodic engineering memory for coding agents.")
+app = typer.Typer(
+    help="Local-first episodic engineering memory for coding agents.",
+    invoke_without_command=True,
+)
 episode_app = typer.Typer(help="Create and inspect engineering episodes.")
 review_app = typer.Typer(help="Review hook-captured and agent-proposed episode drafts.", invoke_without_command=True)
 mcp_app = typer.Typer(help="Run the local EngBrain MCP server.")
@@ -43,13 +46,16 @@ def _fail(message: str) -> None:
     raise typer.Exit(code=1)
 
 
-@app.callback()
+@app.callback(invoke_without_command=True)
 def main(
+    ctx: typer.Context,
     version: bool = typer.Option(False, "--version", help="Show the installed version."),
 ) -> None:
     if version:
         typer.echo(f"EngBrain {__version__}")
         raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
 
 
 @app.command()
