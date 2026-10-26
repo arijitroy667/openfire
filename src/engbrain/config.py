@@ -46,6 +46,31 @@ def normalize_root(root: Path) -> str:
     return str(root.resolve()).casefold()
 
 
+def ensure_local_database_ignored(root: Path) -> None:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--git-path", "info/exclude"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=3,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ValueError(f"Could not locate Git's local exclude file: {exc}") from exc
+    exclude_path = Path(result.stdout.strip())
+    if not exclude_path.is_absolute():
+        exclude_path = (root / exclude_path).resolve()
+    try:
+        existing = exclude_path.read_text(encoding="utf-8") if exclude_path.exists() else ""
+        lines = {line.strip() for line in existing.splitlines()}
+        if "/.engbrain/" not in lines and ".engbrain/" not in lines:
+            exclude_path.parent.mkdir(parents=True, exist_ok=True)
+            prefix = "" if not existing or existing.endswith(("\n", "\r")) else "\n"
+            exclude_path.write_text(existing + prefix + "# EngBrain local memory\n/.engbrain/\n", encoding="utf-8")
+    except OSError as exc:
+        raise ValueError(f"Could not protect local EngBrain data from Git: {exc}") from exc
+
+
 def initialize_project(start: Path | None = None, *, project_name: str | None = None) -> Project:
     start = (start or Path.cwd()).resolve()
     root = git_root(start)
@@ -54,6 +79,7 @@ def initialize_project(start: Path | None = None, *, project_name: str | None = 
     app_dir = root / APP_DIR
     db_path = app_dir / DB_NAME
     initialize_database(db_path)
+    ensure_local_database_ignored(root)
     fingerprint = repository_fingerprint(root)
     normalized = normalize_root(root)
     with transaction(db_path) as connection:

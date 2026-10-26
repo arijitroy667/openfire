@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def connect(db_path: Path) -> sqlite3.Connection:
@@ -80,7 +80,19 @@ def initialize_database(db_path: Path) -> None:
                 exit_code INTEGER,
                 output_tail TEXT NOT NULL DEFAULT '',
                 cwd TEXT NOT NULL,
+                commit_sha TEXT,
                 created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS detected_sequences (
+                id TEXT PRIMARY KEY,
+                project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                session_id TEXT NOT NULL,
+                normalized_command TEXT NOT NULL,
+                first_failure_event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                success_event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+                episode_id TEXT REFERENCES episodes(id) ON DELETE SET NULL,
+                created_at TEXT NOT NULL,
+                UNIQUE(project_id, session_id, normalized_command, first_failure_event_id, success_event_id)
             );
             CREATE TABLE IF NOT EXISTS retrievals (
                 id TEXT PRIMARY KEY,
@@ -110,8 +122,18 @@ def initialize_database(db_path: Path) -> None:
             );
             """
         )
-        connection.execute("DELETE FROM schema_meta")
-        connection.execute("INSERT INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(events)").fetchall()}
+        if "commit_sha" not in columns:
+            connection.execute("ALTER TABLE events ADD COLUMN commit_sha TEXT")
+        current = connection.execute("SELECT MAX(version) FROM schema_meta").fetchone()[0]
+        if current is not None and current > SCHEMA_VERSION:
+            raise RuntimeError(
+                f"Database schema version {current} is newer than this EngBrain build supports ({SCHEMA_VERSION})"
+            )
+        if current is None:
+            connection.execute("INSERT INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
+        elif current < SCHEMA_VERSION:
+            connection.execute("UPDATE schema_meta SET version = ?", (SCHEMA_VERSION,))
 
 
 def fts5_available(db_path: Path) -> bool:

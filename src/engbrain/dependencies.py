@@ -73,6 +73,12 @@ def dependency_snapshot(root: Path) -> dict[str, str | None] | None:
                 match = _PINNED_REQUIREMENT.match(requirement)
                 if match:
                     versions.setdefault(normalize_name(match.group(1)), match.group(2))
+                    found = True
+                else:
+                    name_match = re.match(r"^\s*([A-Za-z0-9_.-]+)", requirement)
+                    if name_match:
+                        versions.setdefault(normalize_name(name_match.group(1)), None)
+                        found = True
         except (OSError, tomllib.TOMLDecodeError):
             pass
 

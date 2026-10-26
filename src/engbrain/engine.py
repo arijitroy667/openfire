@@ -117,6 +117,42 @@ def _episode_from_row(row: sqlite3.Row) -> Episode:
     return Episode.model_validate(raw)
 
 
+def _insert_anchors(
+    connection: sqlite3.Connection,
+    project: Project,
+    episode: Episode,
+    *,
+    paths: list[str] | None = None,
+    dependencies: list[str] | None = None,
+    captured_commit: str | None = None,
+) -> None:
+    root = Path(project.repo_root).resolve()
+    if captured_commit:
+        connection.execute(
+            "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,NULL)",
+            (uuid4().hex, episode.id, "commit", captured_commit),
+        )
+    for value in paths or []:
+        candidate = (root / value).resolve()
+        try:
+            relative = candidate.relative_to(root).as_posix()
+        except ValueError as exc:
+            raise ValueError(f"Path anchor must be inside the repository: {value}") from exc
+        if not relative or relative == ".":
+            raise ValueError("A path anchor must name a file inside the repository")
+        connection.execute(
+            "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,NULL)",
+            (uuid4().hex, episode.id, "path", relative),
+        )
+    snapshot = dependency_snapshot(root)
+    for value in dependencies or []:
+        name, version = parse_dependency_anchor(value, snapshot)
+        connection.execute(
+            "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,?)",
+            (uuid4().hex, episode.id, "dependency", name, version),
+        )
+
+
 def _query_episode(connection: sqlite3.Connection, project: Project, episode_id: str) -> Episode:
     row = connection.execute(
         "SELECT * FROM episodes WHERE id = ? AND project_id = ?",
@@ -142,31 +178,7 @@ def create_episode(
     episode = Episode.model_validate({**safe_data, "project_id": project.id})
     with transaction(database_path(project)) as connection:
         _save_episode(connection, episode)
-        if captured_commit:
-            connection.execute(
-                "INSERT INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,NULL)",
-                (uuid4().hex, episode.id, "commit", captured_commit),
-            )
-        root = Path(project.repo_root).resolve()
-        for value in paths or []:
-            candidate = (root / value).resolve()
-            try:
-                relative = candidate.relative_to(root).as_posix()
-            except ValueError as exc:
-                raise ValueError(f"Path anchor must be inside the repository: {value}") from exc
-            if not relative or relative == ".":
-                raise ValueError("A path anchor must name a file inside the repository")
-            connection.execute(
-                "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,NULL)",
-                (uuid4().hex, episode.id, "path", relative),
-            )
-        snapshot = dependency_snapshot(root)
-        for value in dependencies or []:
-            name, version = parse_dependency_anchor(value, snapshot)
-            connection.execute(
-                "INSERT OR IGNORE INTO episode_anchors(id,episode_id,kind,value,version) VALUES(?,?,?,?,?)",
-                (uuid4().hex, episode.id, "dependency", name, version),
-            )
+        _insert_anchors(connection, project, episode, paths=paths, dependencies=dependencies, captured_commit=captured_commit)
     return episode
 
 

@@ -4,12 +4,14 @@ import sqlite3
 import subprocess
 import sys
 from pathlib import Path
+from typing import Literal
 
 import typer
 
 from engbrain import __version__
 from engbrain.config import database_path, initialize_project, load_project
 from engbrain.db import database_integrity, fts5_available
+from engbrain.client_config import claude_code_setup_present, claude_code_status, configure_claude_code
 from engbrain.engine import create_episode, edit_draft, episode_anchors, get_episode, list_episodes, review_draft
 from engbrain.models import Attempt, EpisodeDraft, EpisodeStatus, EpisodeType, ReviewState
 from engbrain.staleness import compute_staleness
@@ -19,9 +21,11 @@ app = typer.Typer(help="Local-first episodic engineering memory for coding agent
 episode_app = typer.Typer(help="Create and inspect engineering episodes.")
 review_app = typer.Typer(help="Review hook-captured and agent-proposed episode drafts.", invoke_without_command=True)
 mcp_app = typer.Typer(help="Run the local EngBrain MCP server.")
+hook_app = typer.Typer(help="Internal adapters invoked by supported agent hooks.")
 app.add_typer(episode_app, name="episode")
 app.add_typer(review_app, name="review")
 app.add_typer(mcp_app, name="mcp")
+app.add_typer(hook_app, name="hook")
 
 
 def _fail(message: str) -> None:
@@ -41,15 +45,23 @@ def main(
 @app.command()
 def init(
     name: str | None = typer.Option(None, "--name", help="Name for this repository's memory."),
+    client: Literal["none", "claude-code"] = typer.Option(
+        "none", "--client", help="Optionally register the MCP server and capture hooks."
+    ),
 ) -> None:
     """Initialize a local EngBrain database in the current Git repository."""
     try:
         project = initialize_project(project_name=name)
+        if client == "claude-code":
+            config_paths = configure_claude_code(project)
     except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
         _fail(str(exc))
     typer.echo(f"Initialized EngBrain for {project.name}")
     typer.echo(f"Repository: {project.repo_root}")
     typer.echo(f"Database: {database_path(project)}")
+    if client == "claude-code":
+        for path in config_paths:
+            typer.echo(f"Claude Code configuration: {path}")
 
 
 @app.command()
@@ -64,6 +76,16 @@ def doctor() -> None:
         checks.append(("SQLite FTS5", fts5_available(db_path), "required for episode search"))
         integrity = database_integrity(db_path)
         checks.append(("Database integrity", integrity == "ok", integrity))
+        mcp_registered, hooks_registered = claude_code_status(project)
+        setup_present = claude_code_setup_present(project)
+        if mcp_registered and hooks_registered:
+            checks.append(("Claude Code MCP", True, "registered"))
+            checks.append(("Claude Code capture hooks", True, "registered"))
+        elif setup_present:
+            checks.append(("Claude Code MCP", mcp_registered, "registered and available" if mcp_registered else "missing or command is not on PATH"))
+            checks.append(("Claude Code capture hooks", hooks_registered, "registered and available" if hooks_registered else "missing or command is not on PATH"))
+        else:
+            typer.echo("SKIP  Claude Code MCP/hooks: optional; enable with `engbrain init --client claude-code`")
     except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
         checks.append(("Project", False, str(exc)))
     for label, ok, details in checks:
@@ -134,6 +156,18 @@ def mcp_serve(
     run_server(Path(project.repo_root))
 
 
+@hook_app.command("event")
+def hook_event() -> None:
+    """Read a Claude Code hook JSON payload from stdin and capture supported commands."""
+    from engbrain.hooks import handle_stdin
+
+    try:
+        handle_stdin()
+    except Exception:
+        # Capture is best-effort and must not interrupt the developer's agent session.
+        return
+
+
 def _display_episode(episode) -> None:
     typer.echo(f"{episode.title} [{episode.id}]")
     typer.echo(f"Type: {episode.episode_type.value} | status: {episode.status.value} | review: {episode.review_state.value}")
@@ -146,7 +180,7 @@ def _display_episode(episode) -> None:
         for index, attempt in enumerate(episode.attempts, start=1):
             details = attempt.description
             if attempt.outcome:
-                details += f" — {attempt.outcome}"
+                details += f" - {attempt.outcome}"
             if attempt.command:
                 details += f" (command: {attempt.command}; exit: {attempt.exit_code})"
             typer.echo(f"  {index}. {details}")

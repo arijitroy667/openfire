@@ -10,10 +10,10 @@ from uuid import uuid4
 from engbrain.config import database_path
 from engbrain.db import transaction
 from engbrain.engine import _episode_from_row
-from engbrain.models import EpisodeResult, EpisodeType, Project, ReviewState
+from engbrain.models import EpisodeAnchor, EpisodeResult, EpisodeType, Project
 from engbrain.redaction import redact_text
 from engbrain.signatures import fts_query, normalize_error_signature
-from engbrain.staleness import compute_staleness
+from engbrain.staleness import StalenessCache, compute_staleness
 
 RRF_K = 60
 MAX_RESULTS = 5
@@ -173,13 +173,28 @@ def search_memory(
             [project.id, *candidate_ids],
         ).fetchall()
         episodes = {row["id"]: _episode_from_row(row) for row in rows}
+        anchor_rows = connection.execute(
+            f"""SELECT a.* FROM episode_anchors AS a JOIN episodes AS e ON e.id = a.episode_id
+                WHERE e.project_id = ? AND a.episode_id IN ({placeholders}) ORDER BY a.kind,a.value""",
+            [project.id, *candidate_ids],
+        ).fetchall()
+        anchors_by_episode: dict[str, list[EpisodeAnchor]] = {}
+        for row in anchor_rows:
+            anchor = EpisodeAnchor.model_validate(dict(row))
+            anchors_by_episode.setdefault(anchor.episode_id, []).append(anchor)
 
         results: list[tuple[float, EpisodeResult]] = []
+        staleness_cache = StalenessCache(Path(project.repo_root))
         for episode_id in candidate_ids:
             episode = episodes.get(episode_id)
             if episode is None:
                 continue
-            result = compute_staleness(project, episode)
+            result = compute_staleness(
+                project,
+                episode,
+                cache=staleness_cache,
+                anchors=anchors_by_episode.get(episode_id, []),
+            )
             adjusted = scores[episode_id]
             source_set = match_sources.get(episode_id, set())
             if "error_signature" in source_set:

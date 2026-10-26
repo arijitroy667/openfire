@@ -2,12 +2,54 @@ from __future__ import annotations
 
 import re
 import subprocess
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from engbrain.config import database_path
 from engbrain.db import transaction
 from engbrain.dependencies import dependency_snapshot
 from engbrain.models import AnchorKind, Episode, EpisodeAnchor, EpisodeResult, Project, StalenessLevel
+
+
+@dataclass
+class StalenessCache:
+    root: Path
+    head_checked: bool = False
+    head: str | None = None
+    dependencies_loaded: bool = False
+    dependencies: dict[str, str | None] | None = None
+    ancestors: dict[str, bool] = field(default_factory=dict)
+    changed_counts: dict[tuple[str, tuple[str, ...]], int | None] = field(default_factory=dict)
+    working_changes: dict[tuple[str, ...], list[str] | None] = field(default_factory=dict)
+
+    def get_head(self) -> str | None:
+        if not self.head_checked:
+            self.head = current_commit(self.root)
+            self.head_checked = True
+        return self.head
+
+    def is_ancestor(self, sha: str, head: str) -> bool:
+        if sha not in self.ancestors:
+            self.ancestors[sha] = _is_ancestor(self.root, sha, head)
+        return self.ancestors[sha]
+
+    def count_changed(self, sha: str, head: str, paths: list[str]) -> int | None:
+        key = (sha, tuple(sorted(paths)))
+        if key not in self.changed_counts:
+            self.changed_counts[key] = _changed_commit_count(self.root, sha, head, list(key[1]))
+        return self.changed_counts[key]
+
+    def get_working_changes(self, paths: list[str]) -> list[str] | None:
+        key = tuple(sorted(paths))
+        if key not in self.working_changes:
+            self.working_changes[key] = _working_tree_changes(self.root, list(key))
+        return self.working_changes[key]
+
+    def get_dependencies(self) -> dict[str, str | None] | None:
+        if not self.dependencies_loaded:
+            self.dependencies = dependency_snapshot(self.root)
+            self.dependencies_loaded = True
+        return self.dependencies
 
 
 def current_commit(root: Path) -> str | None:
@@ -76,13 +118,20 @@ def load_anchors(project: Project, episode_id: str) -> list[EpisodeAnchor]:
     return [EpisodeAnchor.model_validate(dict(row)) for row in rows]
 
 
-def compute_staleness(project: Project, episode: Episode) -> EpisodeResult:
-    anchors = load_anchors(project, episode.id)
+def compute_staleness(
+    project: Project,
+    episode: Episode,
+    *,
+    cache: StalenessCache | None = None,
+    anchors: list[EpisodeAnchor] | None = None,
+) -> EpisodeResult:
+    cache = cache or StalenessCache(Path(project.repo_root))
+    anchors = anchors if anchors is not None else load_anchors(project, episode.id)
     path_anchors = [anchor.value for anchor in anchors if anchor.kind == AnchorKind.PATH]
     dependency_anchors = [anchor for anchor in anchors if anchor.kind == AnchorKind.DEPENDENCY]
     commit_anchor = next((anchor.value for anchor in anchors if anchor.kind == AnchorKind.COMMIT), None)
     base_commit = episode.verified_at_sha or commit_anchor
-    head = current_commit(Path(project.repo_root))
+    head = cache.get_head()
     reasons: list[str] = []
     changed = False
     unknown = False
@@ -98,7 +147,7 @@ def compute_staleness(project: Project, episode: Episode) -> EpisodeResult:
         if base_commit is None:
             unknown = True
             reasons.append("No capture commit is available for the file anchors")
-        elif not _is_ancestor(Path(project.repo_root), base_commit, head):
+        elif not cache.is_ancestor(base_commit, head):
             unknown = True
             reasons.append("The capture commit is missing or is not an ancestor of the current checkout")
         else:
@@ -107,7 +156,7 @@ def compute_staleness(project: Project, episode: Episode) -> EpisodeResult:
                 stale = True
                 for path in missing:
                     reasons.append(f"Anchored path was deleted or renamed: {path}")
-            count = _changed_commit_count(Path(project.repo_root), base_commit, head, path_anchors)
+            count = cache.count_changed(base_commit, head, path_anchors)
             if count is None:
                 unknown = True
                 reasons.append("Git could not count commits touching the anchored paths")
@@ -119,7 +168,7 @@ def compute_staleness(project: Project, episode: Episode) -> EpisodeResult:
                 reasons.append(f"{count} commit(s) touched anchored paths since capture")
             else:
                 reasons.append("No commits touched the anchored paths since capture")
-            working_changes = _working_tree_changes(Path(project.repo_root), path_anchors)
+            working_changes = cache.get_working_changes(path_anchors)
             if working_changes is None:
                 unknown = True
                 reasons.append("Git could not inspect working-tree changes for the anchored paths")
@@ -128,7 +177,7 @@ def compute_staleness(project: Project, episode: Episode) -> EpisodeResult:
                 reasons.append("Anchored paths have uncommitted changes: " + ", ".join(working_changes[:5]))
 
     if dependency_anchors:
-        snapshot = dependency_snapshot(Path(project.repo_root))
+        snapshot = cache.get_dependencies()
         if snapshot is None:
             unknown = True
             reasons.append("No supported dependency lock or requirements file is available")
