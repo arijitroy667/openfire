@@ -12,7 +12,7 @@ import typer
 from engbrain import __version__
 from engbrain.config import database_path, initialize_project, load_project
 from engbrain.db import database_integrity, fts5_available
-from engbrain.client_config import claude_code_setup_present, claude_code_status, configure_claude_code
+from engbrain.client_config import client_statuses, configure_client
 from engbrain.engine import (
     create_episode,
     edit_draft,
@@ -61,23 +61,21 @@ def main(
 @app.command()
 def init(
     name: str | None = typer.Option(None, "--name", help="Name for this repository's memory."),
-    client: Literal["none", "claude-code"] = typer.Option(
-        "none", "--client", help="Optionally register the MCP server and capture hooks."
+    client: Literal["none", "claude-code", "codex", "cursor", "vscode"] = typer.Option(
+        "none", "--client", help="Optionally configure an MCP client; Claude Code also gets capture and recall hooks."
     ),
 ) -> None:
     """Initialize a local EngBrain database in the current Git repository."""
     try:
         project = initialize_project(project_name=name)
-        if client == "claude-code":
-            config_paths = configure_claude_code(project)
+        config_paths = configure_client(project, client)
     except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
         _fail(str(exc))
     typer.echo(f"Initialized EngBrain for {project.name}")
     typer.echo(f"Repository: {project.repo_root}")
     typer.echo(f"Database: {database_path(project)}")
-    if client == "claude-code":
-        for path in config_paths:
-            typer.echo(f"Claude Code configuration: {path}")
+    for path in config_paths:
+        typer.echo(f"Client configuration: {path}")
 
 
 @app.command()
@@ -92,16 +90,13 @@ def doctor() -> None:
         checks.append(("SQLite FTS5", fts5_available(db_path), "required for episode search"))
         integrity = database_integrity(db_path)
         checks.append(("Database integrity", integrity == "ok", integrity))
-        mcp_registered, hooks_registered = claude_code_status(project)
-        setup_present = claude_code_setup_present(project)
-        if mcp_registered and hooks_registered:
-            checks.append(("Claude Code MCP", True, "registered"))
-            checks.append(("Claude Code hooks", True, "capture and pre-edit recall registered"))
-        elif setup_present:
-            checks.append(("Claude Code MCP", mcp_registered, "registered and available" if mcp_registered else "missing or command is not on PATH"))
-            checks.append(("Claude Code hooks", hooks_registered, "registered and available" if hooks_registered else "missing or command is not on PATH"))
-        else:
-            typer.echo("SKIP  Claude Code MCP/hooks: optional; enable with `engbrain init --client claude-code`")
+        client_checks = client_statuses(project)
+        for label, (available, configured) in client_checks.items():
+            if configured:
+                details = "registered and available" if available else "configured but `engbrain` is missing from PATH"
+                checks.append((label, available, details))
+        if not any(configured for _, configured in client_checks.values()):
+            typer.echo("SKIP  Client integrations: optional; enable with `engbrain init --client <claude-code|codex|cursor|vscode>`")
     except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
         checks.append(("Project", False, str(exc)))
     for label, ok, details in checks:

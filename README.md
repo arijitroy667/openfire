@@ -44,15 +44,18 @@ The core requires no hosted service, LLM, embedding model, or network access.
 
 ## Install and initialize
 
-Requirements: Python 3.11+, Git, SQLite with FTS5, and Claude Code for the reference hook integration. From a checkout of this repository, install the editable package and initialize Claude Code:
+Requirements: Python 3.11+, Git, and SQLite with FTS5. From a checkout of this repository, install the package and initialize one or more compatible clients:
 
 ~~~powershell
 pipx install --editable .
 engbrain init --client claude-code
+engbrain init --client codex
+engbrain init --client cursor
+engbrain init --client vscode
 engbrain doctor
 ~~~
 
-The first two commands are the setup path after obtaining the checkout; doctor is an optional diagnostic. The EngBrain command must be on PATH. Initialization creates the local database, excludes .engbrain from this repository's Git info/exclude file, and registers the project MCP server and asynchronous command hooks in Claude Code configuration. Review the generated config and approve the project MCP server in Claude Code when prompted.
+The EngBrain command must be on PATH. Initialization creates the local database, excludes .engbrain from this repository's Git info/exclude file, and writes the selected client's project-level MCP configuration. Claude Code also receives command-capture and pre-edit hooks. The generated Codex, Cursor, and VS Code files register MCP only. [Codex](https://developers.openai.com/codex/mcp) loads project config for trusted projects; [Cursor](https://cursor.com/docs/mcp) and [VS Code](https://code.visualstudio.com/docs/agent-customization/mcp-servers) may require a restart or approval before connecting.
 
 For development, use uv instead:
 
@@ -96,7 +99,7 @@ Create and accept the replacement episode before superseding an older accepted r
 
 After a recall, record whether a result helped with **engbrain feedback EPISODE_ID helpful** or **engbrain feedback EPISODE_ID not-helpful**. Feedback is stored locally and does not change ranking automatically.
 
-The supported hook client in this release is Claude Code. EngBrain uses its [command hooks](https://code.claude.com/docs/en/hooks) and project [MCP configuration](https://code.claude.com/docs/en/mcp). The pre-edit hook is synchronous so Claude Code can add its context before the tool call; its timeout is three seconds, and it fails open when no safe matches are available. Other MCP clients can run **engbrain mcp serve --root REPOSITORY_PATH** using stdio and call **search_episodes**, **get_episode**, and **propose_episode**. The MCP server returns no event output tails.
+The supported hook client in this release is Claude Code. EngBrain uses its [command hooks](https://code.claude.com/docs/en/hooks) and project [MCP configuration](https://code.claude.com/docs/en/mcp). The pre-edit hook is synchronous so Claude Code can add its context before the tool call; its timeout is three seconds, and it fails open when no safe matches are available. Codex, Cursor, and VS Code receive repository-scoped stdio MCP configuration and can call **search_episodes**, **get_episode**, and **propose_episode**. They do not yet receive hook-based automatic capture or pre-edit recall. The MCP server returns no event output tails.
 
 ## Demo
 
