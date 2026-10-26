@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 import subprocess
+import sys
 from pathlib import Path
 
 import typer
@@ -9,8 +10,14 @@ import typer
 from engbrain import __version__
 from engbrain.config import database_path, initialize_project, load_project
 from engbrain.db import database_integrity, fts5_available
+from engbrain.engine import create_episode, edit_draft, episode_anchors, get_episode, list_episodes, review_draft
+from engbrain.models import Attempt, EpisodeDraft, EpisodeStatus, EpisodeType, ReviewState
 
 app = typer.Typer(help="Local-first episodic engineering memory for coding agents.")
+episode_app = typer.Typer(help="Create and inspect engineering episodes.")
+review_app = typer.Typer(help="Review hook-captured and agent-proposed episode drafts.", invoke_without_command=True)
+app.add_typer(episode_app, name="episode")
+app.add_typer(review_app, name="review")
 
 
 def _fail(message: str) -> None:
@@ -76,8 +83,171 @@ def status() -> None:
                 (project.id,),
             ).fetchone()[0]
         typer.echo(f"Project: {project.name} ({project.id})")
-        typer.echo(f"Episodes: {episodes} · drafts awaiting review: {drafts}")
+        typer.echo(f"Episodes: {episodes} | drafts awaiting review: {drafts}")
         typer.echo(f"Database: {db_path}")
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+
+
+def _display_episode(episode) -> None:
+    typer.echo(f"{episode.title} [{episode.id}]")
+    typer.echo(f"Type: {episode.episode_type.value} | status: {episode.status.value} | review: {episode.review_state.value}")
+    typer.echo(f"Evidence: {episode.evidence_kind.value} | origin: {episode.origin.value}")
+    typer.echo(f"Problem: {episode.problem}")
+    if episode.context:
+        typer.echo(f"Context: {episode.context}")
+    if episode.attempts:
+        typer.echo("Attempts:")
+        for index, attempt in enumerate(episode.attempts, start=1):
+            details = attempt.description
+            if attempt.outcome:
+                details += f" — {attempt.outcome}"
+            if attempt.command:
+                details += f" (command: {attempt.command}; exit: {attempt.exit_code})"
+            typer.echo(f"  {index}. {details}")
+    if episode.solution_taken:
+        typer.echo(f"Solution: {episode.solution_taken}")
+    if episode.rejected_alternatives:
+        typer.echo("Rejected alternatives: " + "; ".join(episode.rejected_alternatives))
+    if episode.verification_text:
+        typer.echo(f"Verification: {episode.verification_text}")
+    if episode.evidence:
+        typer.echo("Evidence: " + str(episode.evidence))
+    anchors = episode_anchors(load_project(), episode.id)
+    if anchors:
+        typer.echo("Anchors:")
+        for anchor in anchors:
+            version = f" ({anchor['version']})" if anchor["version"] else ""
+            typer.echo(f"  - {anchor['kind']}: {anchor['value']}{version}")
+
+
+@episode_app.command("create")
+def episode_create(
+    title: str | None = typer.Option(None, "--title", help="Short incident title."),
+    problem: str | None = typer.Option(None, "--problem", help="Observed problem and symptoms."),
+    episode_type: EpisodeType = typer.Option(EpisodeType.DEBUGGING, "--type", help="Episode category."),
+    context: str = typer.Option("", "--context", help="Relevant environment or repository context."),
+    attempts: list[str] | None = typer.Option(None, "--attempt", help="Attempt text; repeat for multiple attempts."),
+    solution: str | None = typer.Option(None, "--solution", help="What ultimately worked, if known."),
+    verification: str | None = typer.Option(None, "--verification", help="How the result was checked."),
+) -> None:
+    """Create a human-authored episode without requiring an LLM."""
+    try:
+        if title is None:
+            title = typer.prompt("Title")
+        if problem is None:
+            problem = typer.prompt("Problem")
+        if not attempts and sys.stdin.isatty():
+            entered = typer.prompt("Attempt (leave blank to finish)", default="")
+            attempts = []
+            while entered:
+                attempts.append(entered)
+                entered = typer.prompt("Another attempt (leave blank to finish)", default="")
+        draft = EpisodeDraft(
+            title=title,
+            episode_type=episode_type,
+            problem=problem,
+            context=context,
+            attempts=[Attempt(description=item) for item in (attempts or [])],
+            solution_taken=solution,
+            verification_text=verification,
+            review_state=ReviewState.ACCEPTED,
+        )
+        episode = create_episode(load_project(), draft)
+        typer.echo(f"Created {episode.status.value} episode {episode.id}: {episode.title}")
+    except (OSError, ValueError, sqlite3.Error, subprocess.SubprocessError) as exc:
+        _fail(str(exc))
+
+
+@episode_app.command("list")
+def episode_list(
+    limit: int = typer.Option(20, min=1, max=100, help="Maximum episodes to show."),
+    review_state: ReviewState | None = typer.Option(None, "--review-state", help="Filter by review state."),
+    episode_status: EpisodeStatus | None = typer.Option(None, "--status", help="Filter by episode status."),
+) -> None:
+    """List this repository's episodes."""
+    try:
+        episodes = list_episodes(load_project(), limit=limit, review_state=review_state, status=episode_status)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+    if not episodes:
+        typer.echo("No episodes found.")
+        return
+    for episode in episodes:
+        typer.echo(
+            f"{episode.id}  {episode.status.value:<10} {episode.review_state.value:<8} "
+            f"{episode.episode_type.value:<22} {episode.title}"
+        )
+
+
+@episode_app.command("show")
+def episode_show(episode_id: str) -> None:
+    """Show an episode's content, evidence, provenance, and anchors."""
+    try:
+        _display_episode(get_episode(load_project(), episode_id))
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+
+
+@review_app.callback()
+def review_queue(ctx: typer.Context) -> None:
+    """List drafts when called without a review action."""
+    if ctx.invoked_subcommand is not None:
+        return
+    try:
+        drafts = list_episodes(load_project(), limit=100, review_state=ReviewState.DRAFT)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+    if not drafts:
+        typer.echo("No drafts are waiting for review.")
+        return
+    for episode in drafts:
+        typer.echo(f"{episode.id}  {episode.origin.value:<6} {episode.title}")
+
+
+@review_app.command("accept")
+def review_accept(episode_id: str) -> None:
+    """Accept a draft; mechanical passing evidence is labeled verified."""
+    try:
+        episode = review_draft(load_project(), episode_id, accept=True)
+        typer.echo(f"Accepted {episode.id} as {episode.status.value}.")
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+
+
+@review_app.command("reject")
+def review_reject(episode_id: str) -> None:
+    """Reject a draft while keeping its review record locally."""
+    try:
+        episode = review_draft(load_project(), episode_id, accept=False)
+        typer.echo(f"Rejected {episode.id}.")
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+
+
+@review_app.command("edit")
+def review_edit(
+    episode_id: str,
+    title: str | None = typer.Option(None, "--title"),
+    problem: str | None = typer.Option(None, "--problem"),
+    context: str | None = typer.Option(None, "--context"),
+    solution: str | None = typer.Option(None, "--solution"),
+    verification: str | None = typer.Option(None, "--verification"),
+) -> None:
+    """Edit a draft before accepting it."""
+    try:
+        episode = edit_draft(
+            load_project(),
+            episode_id,
+            {
+                "title": title,
+                "problem": problem,
+                "context": context,
+                "solution_taken": solution,
+                "verification_text": verification,
+            },
+        )
+        typer.echo(f"Updated draft {episode.id}: {episode.title}")
     except (OSError, ValueError, sqlite3.Error) as exc:
         _fail(str(exc))
 
