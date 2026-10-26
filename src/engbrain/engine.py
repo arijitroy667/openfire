@@ -215,6 +215,48 @@ def supersede_episode(project: Project, old_episode_id: str, new_episode_id: str
         return updated_old, updated_new
 
 
+def record_retrieval_feedback(project: Project, episode_id: str, *, helpful: bool) -> dict[str, Any]:
+    """Attach or update a local helpfulness mark for the latest retrieval containing an episode."""
+    with transaction(database_path(project)) as connection:
+        _query_episode(connection, project, episode_id)
+        retrieval_id: str | None = None
+        rows = connection.execute(
+            "SELECT id,returned_ids_json FROM retrievals WHERE project_id = ? ORDER BY created_at DESC LIMIT 500",
+            (project.id,),
+        ).fetchall()
+        for row in rows:
+            try:
+                returned_ids = json.loads(row["returned_ids_json"])
+            except (TypeError, json.JSONDecodeError):
+                continue
+            if episode_id in returned_ids:
+                retrieval_id = row["id"]
+                break
+        if retrieval_id is None:
+            raise ValueError("That episode was not returned by a recent search in this project")
+        feedback_id = uuid4().hex
+        created_at = utc_now().isoformat()
+        connection.execute(
+            """INSERT INTO retrieval_feedback(id,project_id,retrieval_id,episode_id,helpful,created_at)
+               VALUES(?,?,?,?,?,?)
+               ON CONFLICT(retrieval_id,episode_id)
+               DO UPDATE SET helpful=excluded.helpful,created_at=excluded.created_at""",
+            (feedback_id, project.id, retrieval_id, episode_id, int(helpful), created_at),
+        )
+        row = connection.execute(
+            "SELECT id,retrieval_id,episode_id,helpful,created_at FROM retrieval_feedback "
+            "WHERE project_id = ? AND retrieval_id = ? AND episode_id = ?",
+            (project.id, retrieval_id, episode_id),
+        ).fetchone()
+        return {
+            "id": row["id"],
+            "retrieval_id": row["retrieval_id"],
+            "episode_id": row["episode_id"],
+            "helpful": bool(row["helpful"]),
+            "created_at": row["created_at"],
+        }
+
+
 def list_episodes(
     project: Project,
     *,

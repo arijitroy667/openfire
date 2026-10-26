@@ -19,6 +19,7 @@ from engbrain.engine import (
     episode_anchors,
     get_episode,
     list_episodes,
+    record_retrieval_feedback,
     review_draft,
     supersede_episode,
 )
@@ -181,6 +182,24 @@ def recall(
         typer.echo(f"   {episode.problem[:300]}")
         for reason in result.staleness_reasons:
             typer.echo(f"   - {reason}")
+
+
+@app.command("feedback")
+def retrieval_feedback(
+    episode_id: str,
+    rating: Literal["helpful", "not-helpful"],
+) -> None:
+    """Store a local helpfulness mark for an episode returned by a recent recall."""
+    try:
+        result = record_retrieval_feedback(
+            load_project(),
+            episode_id,
+            helpful=rating == "helpful",
+        )
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+    label = "helpful" if result["helpful"] else "not helpful"
+    typer.echo(f"Recorded {label} feedback for {episode_id}.")
 
 
 @mcp_app.command("serve")

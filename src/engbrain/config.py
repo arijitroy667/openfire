@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from engbrain.db import initialize_database, transaction
+from engbrain.db import ensure_current_schema, initialize_database, transaction
 from engbrain.models import Project
 
 APP_DIR = ".engbrain"
@@ -117,6 +117,7 @@ def load_project(start: Path | None = None) -> Project:
     if root is None:
         raise ValueError(f"No Git repository found from {start}")
     db_path = root / APP_DIR / DB_NAME
+    ensure_current_schema(db_path)
     if not db_path.exists():
         raise ValueError("EngBrain is not initialized here. Run `engbrain init` first.")
     with transaction(db_path) as connection:

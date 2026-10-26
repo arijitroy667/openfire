@@ -76,11 +76,14 @@ engbrain review
 engbrain review edit EPISODE_ID --solution "Raised the pool limit" --verification "Pool check passed"
 engbrain review accept EPISODE_ID
 engbrain recall --query "pool exhausted by parallel requests" --query "connection limit reached under concurrency" --path src/pool.py
+engbrain feedback EPISODE_ID helpful
 ~~~
 
 Manual episodes are accepted but remain unverified unless they carry mechanical evidence. Hook-created and MCP-proposed records begin as drafts. Use **engbrain review reject EPISODE_ID** to reject a draft.
 
 Create and accept the replacement episode before superseding an older accepted record. The old episode remains available for inspection but leaves search results; the new record keeps a link to the old one.
+
+After a recall, record whether a result helped with **engbrain feedback EPISODE_ID helpful** or **engbrain feedback EPISODE_ID not-helpful**. Feedback is stored locally and does not change ranking automatically.
 
 The supported hook client in this release is Claude Code. EngBrain uses its [command hooks](https://code.claude.com/docs/en/hooks) and project [MCP configuration](https://code.claude.com/docs/en/mcp). The pre-edit hook is synchronous so Claude Code can add its context before the tool call; its timeout is three seconds, and it fails open when no safe matches are available. Other MCP clients can run **engbrain mcp serve --root REPOSITORY_PATH** using stdio and call **search_episodes**, **get_episode**, and **propose_episode**. The MCP server returns no event output tails.
 
@@ -110,7 +113,7 @@ The runner accepts a custom JSON corpus; the format and metric definitions are i
 - Retrieval is lexical with error-signature and anchor matching. Paraphrase recall is not guaranteed.
 - Data is local and project-scoped; there is no team sync, dashboard, or remote database.
 - The pre-edit hook matches Claude Code Edit and Write calls. Other MCP clients can use the paths parameter as a fallback.
-- Semantic embeddings, LLM drafting, and retrieval feedback are not implemented.
+- Semantic embeddings and LLM drafting are not implemented.
 
 ## Development
 

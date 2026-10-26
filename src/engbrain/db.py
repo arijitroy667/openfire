@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def connect(db_path: Path) -> sqlite3.Connection:
@@ -101,6 +101,15 @@ def initialize_database(db_path: Path) -> None:
                 returned_ids_json TEXT NOT NULL,
                 created_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS retrieval_feedback (
+                id TEXT PRIMARY KEY,
+                project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+                retrieval_id TEXT NOT NULL REFERENCES retrievals(id) ON DELETE CASCADE,
+                episode_id TEXT NOT NULL REFERENCES episodes(id) ON DELETE CASCADE,
+                helpful INTEGER NOT NULL CHECK(helpful IN (0,1)),
+                created_at TEXT NOT NULL,
+                UNIQUE(retrieval_id,episode_id)
+            );
             CREATE INDEX IF NOT EXISTS idx_episodes_project ON episodes(project_id);
             CREATE INDEX IF NOT EXISTS idx_episodes_status ON episodes(project_id, status);
             CREATE INDEX IF NOT EXISTS idx_episodes_review ON episodes(project_id, review_state);
@@ -109,6 +118,7 @@ def initialize_database(db_path: Path) -> None:
             CREATE INDEX IF NOT EXISTS idx_anchors_value ON episode_anchors(kind, value);
             CREATE UNIQUE INDEX IF NOT EXISTS idx_anchor_unique ON episode_anchors(episode_id, kind, value);
             CREATE INDEX IF NOT EXISTS idx_events_session ON events(project_id, session_id, created_at);
+            CREATE INDEX IF NOT EXISTS idx_feedback_project ON retrieval_feedback(project_id, created_at);
             CREATE VIRTUAL TABLE IF NOT EXISTS episodes_fts USING fts5(
                 episode_id UNINDEXED,
                 title,
@@ -134,6 +144,27 @@ def initialize_database(db_path: Path) -> None:
             connection.execute("INSERT INTO schema_meta(version) VALUES (?)", (SCHEMA_VERSION,))
         elif current < SCHEMA_VERSION:
             connection.execute("UPDATE schema_meta SET version = ?", (SCHEMA_VERSION,))
+
+
+def ensure_current_schema(db_path: Path) -> None:
+    """Apply additive schema upgrades when an existing project is opened."""
+    if not db_path.is_file():
+        return
+    try:
+        with transaction(db_path) as connection:
+            row = connection.execute("SELECT MAX(version) FROM schema_meta").fetchone()
+            current = row[0] if row else None
+    except sqlite3.OperationalError as exc:
+        if "no such table" not in str(exc).casefold():
+            raise
+        initialize_database(db_path)
+        return
+    if current is None or current < SCHEMA_VERSION:
+        initialize_database(db_path)
+    elif current > SCHEMA_VERSION:
+        raise RuntimeError(
+            f"Database schema version {current} is newer than this EngBrain build supports ({SCHEMA_VERSION})"
+        )
 
 
 def fts5_available(db_path: Path) -> bool:

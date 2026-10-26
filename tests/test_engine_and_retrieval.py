@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import pytest
 
-from engbrain.engine import create_episode, get_episode, review_draft, supersede_episode
+from engbrain.config import database_path
+from engbrain.db import transaction
+from engbrain.engine import (
+    create_episode,
+    get_episode,
+    record_retrieval_feedback,
+    review_draft,
+    supersede_episode,
+)
 from engbrain.models import (
     Attempt,
     EpisodeDraft,
@@ -103,6 +111,29 @@ def test_supersession_requires_distinct_accepted_episodes(git_project):
         supersede_episode(project, accepted.id, draft.id)
     with pytest.raises(ValueError, match="cannot supersede itself"):
         supersede_episode(project, accepted.id, accepted.id)
+
+
+def test_feedback_is_scoped_to_a_retrieval_and_updates_the_existing_mark(git_project):
+    _, project = git_project
+    episode = make_episode(project, title="Pool feedback target", problem="A pool issue worth remembering.")
+    search_memory(project, ["pool issue worth remembering"])
+
+    helpful = record_retrieval_feedback(project, episode.id, helpful=True)
+    not_helpful = record_retrieval_feedback(project, episode.id, helpful=False)
+
+    assert helpful["helpful"] is True
+    assert not_helpful["helpful"] is False
+    assert helpful["retrieval_id"] == not_helpful["retrieval_id"]
+    with transaction(database_path(project)) as connection:
+        rows = connection.execute("SELECT helpful FROM retrieval_feedback").fetchall()
+    assert [row["helpful"] for row in rows] == [0]
+
+
+def test_feedback_rejects_episodes_not_returned_by_search(git_project):
+    _, project = git_project
+    episode = make_episode(project, title="Unseen episode", problem="Nothing has searched for this yet.")
+    with pytest.raises(ValueError, match="not returned by a recent search"):
+        record_retrieval_feedback(project, episode.id, helpful=True)
 
 
 def test_retrieval_fuses_queries_and_path_anchors(git_project):
