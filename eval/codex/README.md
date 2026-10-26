@@ -5,6 +5,8 @@ This harness compares Codex on the same isolated bug-fix fixtures in two conditi
 - **Control:** no EngBrain MCP server or seeded memory is available.
 - **Memory:** a repository-local EngBrain MCP server exposes 12 accepted target episodes and 30 distractors.
 
+The 72-session evaluation has been run. See [results and limitations](results-20261026.md) for aggregate metrics, MCP retrieval usage, and the independent verification outcomes.
+
 The corpus contains 12 targets and runs each target three times in each condition: 72 independent Codex sessions. Run order alternates by repetition. The four development fixtures are the only split that may be used for tuning; the eight test fixtures should remain held out until the experiment is finalized.
 
 ## Corpus provenance and limits
