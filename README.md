@@ -71,6 +71,7 @@ engbrain status
 engbrain episode create --title "Pool exhaustion under load" --problem "Concurrent workers exhaust the connection pool" --attempt "Raised the request timeout; failure persisted" --path src/pool.py
 engbrain episode list
 engbrain episode show EPISODE_ID
+engbrain episode supersede OLD_EPISODE_ID --with NEW_EPISODE_ID
 engbrain review
 engbrain review edit EPISODE_ID --solution "Raised the pool limit" --verification "Pool check passed"
 engbrain review accept EPISODE_ID
@@ -78,6 +79,8 @@ engbrain recall --query "pool exhausted by parallel requests" --query "connectio
 ~~~
 
 Manual episodes are accepted but remain unverified unless they carry mechanical evidence. Hook-created and MCP-proposed records begin as drafts. Use **engbrain review reject EPISODE_ID** to reject a draft.
+
+Create and accept the replacement episode before superseding an older accepted record. The old episode remains available for inspection but leaves search results; the new record keeps a link to the old one.
 
 The supported hook client in this release is Claude Code. EngBrain uses its [command hooks](https://code.claude.com/docs/en/hooks) and project [MCP configuration](https://code.claude.com/docs/en/mcp). The pre-edit hook is synchronous so Claude Code can add its context before the tool call; its timeout is three seconds, and it fails open when no safe matches are available. Other MCP clients can run **engbrain mcp serve --root REPOSITORY_PATH** using stdio and call **search_episodes**, **get_episode**, and **propose_episode**. The MCP server returns no event output tails.
 

@@ -13,7 +13,15 @@ from engbrain import __version__
 from engbrain.config import database_path, initialize_project, load_project
 from engbrain.db import database_integrity, fts5_available
 from engbrain.client_config import claude_code_setup_present, claude_code_status, configure_claude_code
-from engbrain.engine import create_episode, edit_draft, episode_anchors, get_episode, list_episodes, review_draft
+from engbrain.engine import (
+    create_episode,
+    edit_draft,
+    episode_anchors,
+    get_episode,
+    list_episodes,
+    review_draft,
+    supersede_episode,
+)
 from engbrain.models import Attempt, EpisodeDraft, EpisodeStatus, EpisodeType, ReviewState
 from engbrain.staleness import compute_staleness
 from engbrain.retrieval import search_memory
@@ -221,6 +229,8 @@ def _display_episode(episode) -> None:
             typer.echo(f"  {index}. {details}")
     if episode.solution_taken:
         typer.echo(f"Solution: {episode.solution_taken}")
+    if episode.supersedes_episode_id:
+        typer.echo(f"Supersedes episode: {episode.supersedes_episode_id}")
     if episode.rejected_alternatives:
         typer.echo("Rejected alternatives: " + "; ".join(episode.rejected_alternatives))
     if episode.verification_text:
@@ -309,6 +319,19 @@ def episode_show(episode_id: str) -> None:
         typer.echo(f"Staleness: {result.staleness.value}")
         for reason in result.staleness_reasons:
             typer.echo(f"  - {reason}")
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+
+
+@episode_app.command("supersede")
+def episode_supersede(
+    old_episode_id: str,
+    new_episode_id: str = typer.Option(..., "--with", help="Accepted episode that replaces the old one."),
+) -> None:
+    """Mark an accepted episode as superseded by another accepted episode."""
+    try:
+        old_episode, new_episode = supersede_episode(load_project(), old_episode_id, new_episode_id)
+        typer.echo(f"Superseded {old_episode.id} with {new_episode.id}.")
     except (OSError, ValueError, sqlite3.Error) as exc:
         _fail(str(exc))
 

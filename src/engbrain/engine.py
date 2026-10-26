@@ -187,6 +187,34 @@ def get_episode(project: Project, episode_id: str) -> Episode:
         return _query_episode(connection, project, episode_id)
 
 
+def supersede_episode(project: Project, old_episode_id: str, new_episode_id: str) -> tuple[Episode, Episode]:
+    """Mark an accepted old episode superseded by a different accepted episode."""
+    if old_episode_id == new_episode_id:
+        raise ValueError("An episode cannot supersede itself")
+    with transaction(database_path(project)) as connection:
+        old_episode = _query_episode(connection, project, old_episode_id)
+        new_episode = _query_episode(connection, project, new_episode_id)
+        if old_episode.review_state != ReviewState.ACCEPTED:
+            raise ValueError("Only accepted episodes can be superseded")
+        if new_episode.review_state != ReviewState.ACCEPTED:
+            raise ValueError("The superseding episode must be accepted first")
+        if old_episode.status == EpisodeStatus.SUPERSEDED:
+            raise ValueError("The old episode is already superseded")
+        if new_episode.status == EpisodeStatus.SUPERSEDED:
+            raise ValueError("A superseded episode cannot supersede another episode")
+        if new_episode.supersedes_episode_id is not None:
+            raise ValueError("The new episode already supersedes another episode")
+        updated_old = old_episode.model_copy(
+            update={"status": EpisodeStatus.SUPERSEDED, "updated_at": utc_now()}
+        )
+        updated_new = new_episode.model_copy(
+            update={"supersedes_episode_id": old_episode.id, "updated_at": utc_now()}
+        )
+        _save_episode(connection, updated_new)
+        _save_episode(connection, updated_old)
+        return updated_old, updated_new
+
+
 def list_episodes(
     project: Project,
     *,

@@ -70,6 +70,6 @@ The core v1.1 workflow is implemented: local initialization, doctor checks, manu
 
 The evaluation requirement is only partially fulfilled. The shipped runner computes Recall@5, MRR, Precision@5, and local retrieval latency from a synthetic corpus. It does not launch coding-agent runs or parse transcripts. The bundled corpus has 12 targets and 30 distractors, but contains no incidents sourced from public issues. No claim about reducing repeated failed attempts or agent tool calls is supported by this fixture.
 
-The product does not implement P1 LLM narrative drafting, P2 semantic embeddings, or P2 retrieval feedback. Supersession is represented in the episode model but has no dedicated review workflow. The Claude Code pre-edit hook is synchronous, has a three-second timeout, and only targets Edit/Write calls with file paths.
+The product does not implement P1 LLM narrative drafting, P2 semantic embeddings, or P2 retrieval feedback. Human-approved supersession is available through the CLI. The Claude Code pre-edit hook is synchronous, has a three-second timeout, and only targets Edit/Write calls with file paths.
 
 The release measurements and corpus format are documented in the root README and eval/README.md. They should be replaced or supplemented with the PRD's public-issue corpus and agent-level experiment before making product-effectiveness claims.

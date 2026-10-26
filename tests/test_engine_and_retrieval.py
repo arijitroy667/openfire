@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from engbrain.engine import create_episode, get_episode, review_draft
+from engbrain.engine import create_episode, get_episode, review_draft, supersede_episode
 from engbrain.models import (
     Attempt,
     EpisodeDraft,
@@ -74,6 +74,35 @@ def test_rejected_draft_stays_out_of_search(git_project):
     rejected = review_draft(project, draft.id, accept=False)
     assert rejected.review_state == ReviewState.REJECTED
     assert search_memory(project, ["rare migration error"]) == []
+
+
+def test_supersession_removes_old_episode_from_search_and_keeps_link(git_project):
+    _, project = git_project
+    old = make_episode(project, title="Old connection limit", problem="The pool accepted too few requests.")
+    new = make_episode(project, title="New connection limit", problem="The pool capacity was raised safely.")
+
+    updated_old, updated_new = supersede_episode(project, old.id, new.id)
+
+    assert updated_old.status.value == "superseded"
+    assert updated_new.supersedes_episode_id == old.id
+    assert get_episode(project, old.id).status.value == "superseded"
+    assert get_episode(project, new.id).supersedes_episode_id == old.id
+    assert [item.episode.id for item in search_memory(project, ["pool capacity connection limit"])] == [new.id]
+
+
+def test_supersession_requires_distinct_accepted_episodes(git_project):
+    _, project = git_project
+    accepted = make_episode(project, title="Accepted memory", problem="An accepted pool workaround.")
+    draft = make_episode(
+        project,
+        title="Draft replacement",
+        problem="A proposed pool workaround.",
+        state=ReviewState.DRAFT,
+    )
+    with pytest.raises(ValueError, match="accepted first"):
+        supersede_episode(project, accepted.id, draft.id)
+    with pytest.raises(ValueError, match="cannot supersede itself"):
+        supersede_episode(project, accepted.id, accepted.id)
 
 
 def test_retrieval_fuses_queries_and_path_anchors(git_project):
