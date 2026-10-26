@@ -20,6 +20,7 @@ from engbrain.models import (
     utc_now,
 )
 from engbrain.redaction import redact_text
+from engbrain.signatures import normalize_error_signature
 from engbrain.staleness import current_commit
 
 
@@ -135,6 +136,8 @@ def create_episode(
 ) -> Episode:
     safe_data = _redact_value(draft.model_dump(mode="json"))
     safe_data["status"] = EpisodeStatus.UNVERIFIED.value
+    if safe_data.get("error_signature"):
+        safe_data["error_signature"] = normalize_error_signature(safe_data["error_signature"])
     captured_commit = current_commit(Path(project.repo_root))
     episode = Episode.model_validate({**safe_data, "project_id": project.id})
     with transaction(database_path(project)) as connection:

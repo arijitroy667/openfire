@@ -13,12 +13,15 @@ from engbrain.db import database_integrity, fts5_available
 from engbrain.engine import create_episode, edit_draft, episode_anchors, get_episode, list_episodes, review_draft
 from engbrain.models import Attempt, EpisodeDraft, EpisodeStatus, EpisodeType, ReviewState
 from engbrain.staleness import compute_staleness
+from engbrain.retrieval import search_memory
 
 app = typer.Typer(help="Local-first episodic engineering memory for coding agents.")
 episode_app = typer.Typer(help="Create and inspect engineering episodes.")
 review_app = typer.Typer(help="Review hook-captured and agent-proposed episode drafts.", invoke_without_command=True)
+mcp_app = typer.Typer(help="Run the local EngBrain MCP server.")
 app.add_typer(episode_app, name="episode")
 app.add_typer(review_app, name="review")
+app.add_typer(mcp_app, name="mcp")
 
 
 def _fail(message: str) -> None:
@@ -88,6 +91,47 @@ def status() -> None:
         typer.echo(f"Database: {db_path}")
     except (OSError, ValueError, sqlite3.Error) as exc:
         _fail(str(exc))
+
+
+@app.command()
+def recall(
+    queries: list[str] = typer.Option(..., "--query", help="Search phrasing; repeat up to five times."),
+    paths: list[str] | None = typer.Option(None, "--path", help="Repository-relative path; repeat as needed."),
+    episode_type: EpisodeType | None = typer.Option(None, "--type", help="Filter by episode category."),
+    limit: int = typer.Option(5, min=1, max=5, help="Maximum results (hard limit: 5)."),
+) -> None:
+    """Search accepted episodes with several phrasings and optional file anchors."""
+    try:
+        results = search_memory(load_project(), queries, paths=paths, episode_type=episode_type, limit=limit)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+    if not results:
+        typer.echo("No matching accepted episodes.")
+        return
+    for index, result in enumerate(results, start=1):
+        episode = result.episode
+        typer.echo(f"{index}. {episode.title} [{episode.id}]")
+        typer.echo(
+            f"   status={episode.status.value} evidence={episode.evidence_kind.value} "
+            f"staleness={result.staleness.value} match={result.match_reason}"
+        )
+        typer.echo(f"   {episode.problem[:300]}")
+        for reason in result.staleness_reasons:
+            typer.echo(f"   - {reason}")
+
+
+@mcp_app.command("serve")
+def mcp_serve(
+    repo_root: Path | None = typer.Option(None, "--root", help="Git repository to scope this server to."),
+) -> None:
+    """Serve search_episodes, get_episode, and propose_episode over stdio."""
+    try:
+        project = load_project(repo_root)
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        _fail(str(exc))
+    from engbrain.mcp_server import run_server
+
+    run_server(Path(project.repo_root))
 
 
 def _display_episode(episode) -> None:
