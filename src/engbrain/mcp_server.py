@@ -52,7 +52,13 @@ def create_server(repo_root: Path) -> MCPServer:
         """
         selected_type = EpisodeType(episode_type) if episode_type else None
         project = load_project(root)
-        results = search_memory(project, queries, paths=paths, episode_type=selected_type, limit=limit)
+        results = search_memory(
+            project,
+            queries,
+            paths=paths,
+            episode_type=selected_type,
+            limit=min(limit, 5),
+        )
         return {
             "project": project.name,
             "count": len(results),

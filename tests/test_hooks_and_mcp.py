@@ -125,7 +125,10 @@ def test_mcp_exposes_search_get_propose_with_review_gate(git_project):
             before = await client.call_tool("search_episodes", {"queries": ["project scoped sample problem"]})
             assert before.structured_content["count"] == 0
             review_draft(project, episode_id, accept=True)
-            after = await client.call_tool("search_episodes", {"queries": ["project scoped sample problem"]})
+            after = await client.call_tool(
+                "search_episodes",
+                {"queries": ["project scoped sample problem"], "limit": 10},
+            )
             assert after.structured_content["count"] == 1
             assert after.structured_content["results"][0]["untrusted"] is True
             detail = await client.call_tool("get_episode", {"episode_id": episode_id})
