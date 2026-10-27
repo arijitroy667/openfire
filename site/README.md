@@ -68,10 +68,14 @@ The `crop` drops the reel's own act/timer footer, so the still reads as a clean 
 
 ## Deploying
 
-Any static host works. The repository root ships a `vercel.json` that redirects `/` to `/site/index.html` and a `.vercelignore` that keeps virtualenvs and build artifacts out of the upload:
+This is a static site; deploy `site/` as the Vercel project root. If the Vercel project currently uses the repository root, Vercel scans the Python package and may fail with `PYTHON_ENTRYPOINT_NOT_FOUND`.
+
+For Git-based deployments, open the Vercel project settings and set **Root Directory** to `site`, then redeploy. The `vercel.json` in this directory configures the static site response headers.
+
+For a CLI deployment from the repository root, use:
 
 ```powershell
-vercel deploy --prod
+vercel deploy .\site --prod
 ```
 
-The deployable root is `site/` itself: `vercel deploy ./site --prod` serves `index.html` at `/`, with the video, poster and assets beside it.
+With `site/` as the project root, `index.html` is served at `/`, with the video, poster, and assets beside it.
