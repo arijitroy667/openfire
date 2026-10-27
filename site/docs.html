@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EngBrain docs — install, MCP connection, commands</title>
+<meta name="description" content="EngBrain documentation: install locally, initialize a repository, connect Claude Code, Codex, Cursor, VS Code, or any MCP client, and use every engbrain command." />
+<meta name="theme-color" content="#f3f4f2" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/theme.css" />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="backdrop">
+  <div class="orb" style="width:520px;height:520px;left:-180px;top:-140px;background:rgba(150,196,240,.7)"></div>
+  <div class="orb" style="width:520px;height:520px;right:-200px;top:340px;background:rgba(247,214,180,.75)"></div>
+</div>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<div class="nav-wrap">
+  <nav class="nav" id="nav" aria-label="Primary">
+    <a class="brand" href="index.html">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4.5a3 3 0 0 0-3 3v1.2a2.8 2.8 0 0 0-2 2.7c0 .9.4 1.7 1.1 2.3a2.8 2.8 0 0 0 1.6 3.6A3 3 0 0 0 12 20a3 3 0 0 0 2.3-1.7 2.8 2.8 0 0 0 1.6-3.6c.7-.6 1.1-1.4 1.1-2.3a2.8 2.8 0 0 0-2-2.7V7.5a3 3 0 0 0-3-3Z" />
+          <path d="M12 9v6M9.8 11.6h4.4" />
+        </svg>
+      </span>
+      EngBrain
+    </a>
+
+    <div class="nav__links" id="navLinks">
+      <a class="nav__link" href="index.html">Overview</a>
+      <a class="nav__link" href="index.html#architecture">Architecture</a>
+      <a class="nav__link" href="index.html#showcase">Showcase</a>
+      <a class="nav__link is-active" href="docs.html">Docs</a>
+    </div>
+
+    <div class="nav__actions">
+      <a class="btn btn--ghost" href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.06 10.06 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+        GitHub
+      </a>
+      <a class="btn btn--primary" href="#quick-start">Get started</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<main id="main" class="docs">
+  <div class="container docs__layout">
+    <aside class="docs__side" aria-label="Documentation sections">
+      <div class="side-group">
+        <div class="side-group__title">Getting started</div>
+        <div class="side-links">
+          <a class="side-link" href="#overview">Overview</a>
+          <a class="side-link" href="#requirements">Requirements</a>
+          <a class="side-link" href="#install">Install</a>
+          <a class="side-link" href="#quick-start">Quick start</a>
+          <a class="side-link" href="#initialize">Initialize a repository</a>
+        </div>
+      </div>
+
+      <div class="side-group">
+        <div class="side-group__title">Connect an agent</div>
+        <div class="side-links">
+          <a class="side-link" href="#claude-code">Claude Code</a>
+          <a class="side-link" href="#codex">Codex</a>
+          <a class="side-link" href="#cursor">Cursor</a>
+          <a class="side-link" href="#vscode">VS Code</a>
+          <a class="side-link" href="#other-mcp">Any MCP client</a>
+          <a class="side-link" href="#mcp-tools">MCP tools</a>
+        </div>
+      </div>
+
+      <div class="side-group">
+        <div class="side-group__title">Reference</div>
+        <div class="side-links">
+          <a class="side-link" href="#commands">Commands</a>
+          <a class="side-link" href="#lifecycle">Episode lifecycle</a>
+          <a class="side-link" href="#staleness">Evidence &amp; staleness</a>
+          <a class="side-link" href="#demo">Demo repository</a>
+          <a class="side-link" href="#evaluation">Evaluation</a>
+        </div>
+      </div>
+
+      <div class="side-group">
+        <div class="side-group__title">More</div>
+        <div class="side-links">
+          <a class="side-link" href="#troubleshooting">Troubleshooting</a>
+          <a class="side-link" href="#limits">Limits &amp; license</a>
+        </div>
+      </div>
+    </aside>
+
+    <article class="docs__body">
+      <header class="doc-hero">
+        <span class="eyebrow">Documentation</span>
+        <h1 style="font-size:clamp(2.1rem,4vw,3.1rem)">Everything EngBrain does, and how to wire it up.</h1>
+        <p class="lede">EngBrain is a local-first, repository-scoped engineering memory for AI coding agents. It records the commands that failed, the attempts that did not work, and the evidence that a fix passed — then serves accepted episodes over MCP with Git-computed freshness.</p>
+      </header>
+
+      <section class="doc-section" id="overview">
+        <h2>Overview</h2>
+        <p>Four moving parts, one Python package:</p>
+        <ul>
+          <li><strong>CLI</strong> — <code>engbrain init</code>, <code>review</code>, <code>recall</code>, <code>eval</code>, and the rest.</li>
+          <li><strong>Hook adapter</strong> — captures Claude Code <code>Bash</code> and <code>PowerShell</code> outcomes and injects context before <code>Edit</code> and <code>Write</code>.</li>
+          <li><strong>MCP server</strong> — three tools over stdio: <code>search_episodes</code>, <code>get_episode</code>, <code>propose_episode</code>.</li>
+          <li><strong>SQLite + Git</strong> — episodes, anchors, and FTS5 live in <code>.engbrain/engbrain.db</code>; freshness is read from Git and your dependency manifests.</li>
+        </ul>
+
+        <div class="doc-callout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+          <span>Two rules govern everything: drafts and rejected records are never searchable, and retrieved text is historical context that EngBrain never executes.</span>
+        </div>
+      </section>
+
+      <section class="doc-section" id="requirements">
+        <h2>Requirements</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Requirement</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Python 3.11+</td><td>CI covers 3.11 and 3.12 on Linux and Windows.</td></tr>
+              <tr><td>Git CLI</td><td>Repository discovery, anchors, staleness.</td></tr>
+              <tr><td>SQLite with FTS5</td><td>Required for search. <code>engbrain doctor</code> reports whether your interpreter has it.</td></tr>
+              <tr><td><code>uv</code> or <code>pipx</code></td><td>Installing and running the project.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:14px">Runtime dependencies are <code>typer</code>, <code>pydantic</code> v2, <code>tomlkit</code>, and the MCP Python SDK. The <code>llm</code> extra adds <code>openai</code>; the <code>dev</code> extra adds <code>pytest</code>.</p>
+      </section>
+
+      <section class="doc-section" id="install">
+        <h2>Install</h2>
+        <p>Install once from the EngBrain checkout. You do not install it into the repository you want it to remember.</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>git clone https://github.com/arijitroy667/openfire.git
+pipx install --editable .\openfire</code></pre>
+        </div>
+
+        <p style="margin-top:16px">For development, use <code>uv</code> instead:</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>cd openfire
+uv sync --extra dev
+uv run engbrain --version</code></pre>
+        </div>
+
+        <div class="doc-callout doc-callout--amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 9v4"/><circle cx="12" cy="17" r=".6" fill="currentColor"/><path d="M10.3 3.9 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          <span>The generated client configurations launch the bare <code>engbrain</code> command. If you only ever run <code>uv run engbrain ...</code>, the agent's process will not find it and <code>engbrain doctor</code> will report “configured but engbrain is missing from PATH”.</span>
+        </div>
+      </section>
+
+      <section class="doc-section" id="quick-start">
+        <h2>Quick start</h2>
+        <p>From the root of the Git repository you want EngBrain to remember:</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>cd C:\work\my-project
+engbrain init --client claude-code
+engbrain doctor
+engbrain status</code></pre>
+        </div>
+
+        <p style="margin-top:16px"><code>init</code> creates <code>.engbrain/engbrain.db</code>, adds <code>/.engbrain/</code> to the clone's <code>.git/info/exclude</code>, and writes the selected client's configuration. Run <code>engbrain doctor</code> after any client change.</p>
+      </section>
+
+      <section class="doc-section" id="initialize">
+        <h2>Initialize a repository</h2>
+        <p>The <code>init</code> command takes two options:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Option</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>--name NAME</code></td><td>Override the project name, which defaults to the repository folder name.</td></tr>
+              <tr><td><code>--client none|claude-code|codex|cursor|vscode</code></td><td>Write project-level configuration for one client. Defaults to <code>none</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top:16px">Run <code>init --client ...</code> again for other clients: files are merged, not overwritten. A conflicting <code>engbrain</code> entry that belongs to a different command is reported instead of being clobbered.</p>
+
+        <h3>What lives where</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Path</th><th>Written by</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>.engbrain/engbrain.db</code></td><td><code>init</code></td><td>SQLite database (WAL), local only</td></tr>
+              <tr><td><code>.git/info/exclude</code></td><td><code>init</code></td><td>Ignores <code>/.engbrain/</code> for this clone</td></tr>
+              <tr><td><code>.mcp.json</code></td><td><code>--client claude-code</code></td><td>stdio MCP server registration</td></tr>
+              <tr><td><code>.claude/settings.local.json</code></td><td><code>--client claude-code</code></td><td>capture and pre-edit hooks</td></tr>
+              <tr><td><code>.codex/config.toml</code></td><td><code>--client codex</code></td><td><code>[mcp_servers.engbrain]</code></td></tr>
+              <tr><td><code>.cursor/mcp.json</code></td><td><code>--client cursor</code></td><td><code>mcpServers.engbrain</code></td></tr>
+              <tr><td><code>.vscode/mcp.json</code></td><td><code>--client vscode</code></td><td><code>servers.engbrain</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="doc-section" id="claude-code">
+        <h2>Connect Claude Code</h2>
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>engbrain init --client claude-code</code></pre>
+        </div>
+
+        <p style="margin-top:16px">This writes two files:</p>
+        <ul>
+          <li><code>.mcp.json</code> registers a stdio server named <code>engbrain</code> with <code>args: ["mcp", "serve", "--root", "${CLAUDE_PROJECT_DIR:-.}"]</code>.</li>
+          <li><code>.claude/settings.local.json</code> gains three hook entries, merged into any hooks you already have.</li>
+        </ul>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Event</th><th>Matcher</th><th>Mode</th><th>Timeout</th><th>Effect</th></tr></thead>
+            <tbody>
+              <tr><td><code>PostToolUse</code></td><td><code>Bash</code>, <code>PowerShell</code></td><td>async</td><td>10 s</td><td>Records a successful command event</td></tr>
+              <tr><td><code>PostToolUseFailure</code></td><td><code>Bash</code>, <code>PowerShell</code></td><td>async</td><td>10 s</td><td>Records a failed command event</td></tr>
+              <tr><td><code>PreToolUse</code></td><td><code>Edit</code>, <code>Write</code></td><td>sync</td><td>3 s</td><td>Injects up to 3 anchored episodes, then lets the edit proceed</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top:16px">The pre-edit hook returns <code>hookSpecificOutput.additionalContext</code> capped at 7,000 characters. It fails open: if the repository is not initialized, the file is <code>.env</code> or a key/certificate, or nothing matches, it returns no context and the edit happens unchanged.</p>
+
+        <h3>Capture contract</h3>
+        <p>Every event stores the redacted command, the exit code, the last 2 KB of output, the working directory, and the commit at capture time. Events are deleted seven days after they are written.</p>
+
+        <div class="doc-callout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+          <span>Restart Claude Code after the first <code>init</code> so the MCP server is spawned and project hooks are loaded.</span>
+        </div>
+      </section>
+
+      <section class="doc-section" id="codex">
+        <h2>Connect Codex</h2>
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>engbrain init --client codex</code></pre>
+        </div>
+        <p style="margin-top:16px">Adds a project entry to <code>.codex/config.toml</code>, preserving existing formatting:</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>[mcp_servers.engbrain]
+command = "engbrain"
+args = ["mcp", "serve", "--root", "."]
+cwd = "."</code></pre>
+        </div>
+
+        <p style="margin-top:16px">Codex loads project-level configuration for trusted projects, so approve the directory once. Codex has no EngBrain hooks: it can search and propose episodes, but nothing is captured automatically.</p>
+      </section>
+
+      <section class="doc-section" id="cursor">
+        <h2>Connect Cursor</h2>
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>engbrain init --client cursor</code></pre>
+        </div>
+        <p style="margin-top:16px">Writes <code>.cursor/mcp.json</code>:</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>{
+  "mcpServers": {
+    "engbrain": {
+      "type": "stdio",
+      "command": "engbrain",
+      "args": ["mcp", "serve", "--root", "${workspaceFolder}"]
+    }
+  }
+}</code></pre>
+        </div>
+
+        <p style="margin-top:16px">Restart or reload Cursor, then approve the server when prompted.</p>
+      </section>
+
+      <section class="doc-section" id="vscode">
+        <h2>Connect VS Code</h2>
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>engbrain init --client vscode</code></pre>
+        </div>
+        <p style="margin-top:16px">Writes <code>.vscode/mcp.json</code>, which uses <code>servers</code> rather than <code>mcpServers</code>:</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>{
+  "servers": {
+    "engbrain": {
+      "type": "stdio",
+      "command": "engbrain",
+      "args": ["mcp", "serve", "--root", "${workspaceFolder}"]
+    }
+  }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="other-mcp">
+        <h2>Connect any other MCP client</h2>
+        <p>Any client that can launch a stdio server works. Register this entry:</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>{
+  "mcpServers": {
+    "engbrain": {
+      "type": "stdio",
+      "command": "engbrain",
+      "args": ["mcp", "serve", "--root", "C:/work/my-project"]
+    }
+  }
+}</code></pre>
+        </div>
+
+        <p style="margin-top:16px">Use an absolute path when the client does not expand workspace variables. To check the server by hand, run <code>engbrain mcp serve --root .</code> inside the repository: it speaks JSON-RPC over stdio and prints nothing else.</p>
+      </section>
+
+      <section class="doc-section" id="mcp-tools">
+        <h2>MCP tools</h2>
+        <p>Three tools, all scoped to the repository the server started in. Search and lookup results carry <code>"untrusted": true</code>.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tool</th><th>Parameters</th><th>Returns</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>search_episodes</code></td>
+                <td><code>queries</code> (1–5), <code>paths</code>, <code>episode_type</code>, <code>limit</code> (max 5)</td>
+                <td>Ranked summaries with status, evidence kind, staleness, reasons, anchors, and <code>match_reason</code></td>
+              </tr>
+              <tr>
+                <td><code>get_episode</code></td>
+                <td><code>episode_id</code></td>
+                <td>Full episode, anchors, staleness level and reasons, provenance</td>
+              </tr>
+              <tr>
+                <td><code>propose_episode</code></td>
+                <td><code>title</code>, <code>episode_type</code>, <code>problem</code>, <code>context</code>, <code>attempts</code>, <code>solution</code>, <code>evidence_text</code>, <code>paths</code></td>
+                <td>The new draft's <code>id</code>, <code>review_state</code>, <code>status</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ul style="margin-top:16px">
+          <li><code>search_episodes</code> searches <strong>accepted</strong> episodes only.</li>
+          <li><code>propose_episode</code> creates a <strong>draft</strong> with <code>origin=agent</code> that a human must accept.</li>
+          <li>Event output tails are never returned over MCP, only stored locally.</li>
+        </ul>
+      </section>
+
+      <section class="doc-section" id="commands">
+        <h2>Commands</h2>
+        <p>One binary, sixteen commands. Run <code>engbrain --help</code> or <code>engbrain &lt;group&gt; --help</code> at any time.</p>
+
+        <h3>Setup and health</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>engbrain init [--name NAME] [--client …]</code></td><td>Create the local database and optionally configure one client</td></tr>
+              <tr><td><code>engbrain doctor</code></td><td>Check Git, database, FTS5, integrity, and client wiring</td></tr>
+              <tr><td><code>engbrain status</code></td><td>Project id, episode count, drafts awaiting review, database path</td></tr>
+              <tr><td><code>engbrain --version</code></td><td>Print the installed version</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Capture and review</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>engbrain review</code></td><td>List drafts awaiting review</td></tr>
+              <tr><td><code>engbrain review accept EPISODE_ID</code></td><td>Accept a draft; mechanical evidence becomes verified</td></tr>
+              <tr><td><code>engbrain review reject EPISODE_ID</code></td><td>Reject a draft, keeping its record locally</td></tr>
+              <tr><td><code>engbrain review edit EPISODE_ID [--title] [--problem] [--context] [--solution] [--verification]</code></td><td>Correct a draft before deciding</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Episodes</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>engbrain episode create</code></td><td>Write an episode by hand (<code>--title</code>, <code>--problem</code>, <code>--type</code>, <code>--context</code>, <code>--attempt</code>, <code>--path</code>, <code>--dependency</code>, <code>--solution</code>, <code>--verification</code>)</td></tr>
+              <tr><td><code>engbrain episode draft --notes "…"</code></td><td>Optional LLM-assisted draft; requires the <code>llm</code> extra</td></tr>
+              <tr><td><code>engbrain episode list [--limit] [--review-state] [--status]</code></td><td>List episodes with status, review state, and type</td></tr>
+              <tr><td><code>engbrain episode show EPISODE_ID</code></td><td>Full episode, evidence, anchors, computed staleness</td></tr>
+              <tr><td><code>engbrain episode supersede OLD --with NEW</code></td><td>Mark an accepted episode replaced by another accepted one</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Search, feedback, evaluation</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>engbrain recall --query "…" [--query "…"] [--path FILE] [--type TYPE] [--limit N]</code></td><td>Search accepted episodes; 1–5 phrasings, limit capped at 5</td></tr>
+              <tr><td><code>engbrain feedback EPISODE_ID helpful|not-helpful</code></td><td>Store a local helpfulness mark for a recent result</td></tr>
+              <tr><td><code>engbrain eval [--dataset FILE] [--json]</code></td><td>Measure Recall@5, MRR, Precision@5, and p95 latency</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Server and internals</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td><code>engbrain mcp serve [--root PATH]</code></td><td>Run the stdio MCP server for one repository</td></tr>
+              <tr><td><code>engbrain hook event</code></td><td>Internal adapter that reads a Claude Code hook payload from stdin</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>A full session</h3>
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>engbrain init --client claude-code
+
+# review what the hooks captured
+engbrain review
+engbrain review edit EPISODE_ID --solution "Raised the pool limit to 4" --verification "check_pool.py passes"
+engbrain review accept EPISODE_ID
+
+# search it later with more than one phrasing
+engbrain recall --query "connection pool exhausted" --query "workers cannot get a connection" --path src/pool.py
+
+# record whether the result was useful
+engbrain feedback EPISODE_ID helpful</code></pre>
+        </div>
+      </section>
+
+      <section class="doc-section" id="lifecycle">
+        <h2>Episode lifecycle</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>State</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>draft</code></td><td>Created by a hook sequence, an agent proposal, or an LLM draft. Never searchable.</td></tr>
+              <tr><td><code>accepted</code> + <code>verified</code></td><td>Human accepted a record whose stored evidence contains an exit code of 0.</td></tr>
+              <tr><td><code>accepted</code> + <code>unverified</code></td><td>Human accepted a record without mechanical evidence. Searchable, but labelled.</td></tr>
+              <tr><td><code>rejected</code></td><td>Reviewer declined it. Kept locally, never searchable.</td></tr>
+              <tr><td><code>superseded</code></td><td>Replaced by a newer accepted episode. Inspectable, excluded from search.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Anchors</h3>
+        <ul>
+          <li><strong>path</strong> — changed or untracked files since the first failure's commit (max 50, sensitive paths skipped).</li>
+          <li><strong>dependency</strong> — names found in the command or error text, resolved through the local manifest snapshot.</li>
+          <li><strong>commit</strong> — the commit at the passing run.</li>
+        </ul>
+        <p style="margin-top:12px">Recognized manifests: <code>uv.lock</code>, <code>poetry.lock</code>, <code>Pipfile.lock</code>, <code>requirements*.txt</code>, and pinned entries in <code>pyproject.toml</code>.</p>
+      </section>
+
+      <section class="doc-section" id="staleness">
+        <h2>Evidence &amp; staleness</h2>
+        <p>Evidence grades are <code>mechanical</code> (observed command outcomes), <code>asserted</code> (an agent supplied supporting text), or <code>none</code>. Only mechanical evidence can become <code>verified</code>, and only after a person accepts it.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>fresh</code></td><td>Anchors exist and Git reports no changes touching them.</td></tr>
+              <tr><td><code>drifted</code></td><td>Working-tree changes, 1–19 commits touching anchors, or a same-major dependency change.</td></tr>
+              <tr><td><code>stale</code></td><td>An anchored path was deleted or renamed, 20+ commits touched anchors, a dependency was removed, or a major version changed.</td></tr>
+              <tr><td><code>unknown</code></td><td>Anchors are missing, or Git history, a capture commit, a pinned version, or a working-tree read is unavailable.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top:16px">Ranking fuses three candidate lists with reciprocal-rank fusion (<code>k = 60</code>): FTS5 <code>bm25</code>, exact normalized error signature, and path anchor equality. Small adjustments then apply: <code>+0.002</code> signature, <code>+0.001</code> path, <code>-0.0005</code> unverified, and small penalties as staleness worsens.</p>
+      </section>
+
+      <section class="doc-section" id="demo">
+        <h2>Demo repository</h2>
+        <p><code>examples/demo-repo</code> reproduces three deterministic incidents, each with a failing check, a one-line fix, and an anchor to watch.</p>
+
+        <div class="snippet">
+          <button class="copy" data-copy>Copy</button>
+          <pre><code>python scripts/check_pool.py          # connection pool exhaustion
+python scripts/check_dependency.py    # dependency pin mismatch
+python scripts/check_runtime_flag.py  # empty environment-variable value
+
+python scripts/offline_demo.py capture all
+python scripts/offline_demo.py drift pool</code></pre>
+        </div>
+
+        <p style="margin-top:16px">Run each check twice so the hooks see failures, apply the fix, then run it once more. The step-by-step recording plan is in <code>examples/demo-repo/VIDEO_DEMO.md</code>.</p>
+      </section>
+
+      <section class="doc-section" id="evaluation">
+        <h2>Evaluation</h2>
+        <p>The bundled corpus is synthetic: 12 target episodes, 30 distractors, 24 queries.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Query set</th><th>n</th><th>Recall@5</th><th>MRR</th></tr></thead>
+            <tbody>
+              <tr><td>Lexical</td><td>12</td><td>1.000</td><td>1.000</td></tr>
+              <tr><td>Paraphrase</td><td>12</td><td>0.750</td><td>0.542</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p style="margin-top:16px">A separate Codex study ran 72 sessions over twelve fixtures: independent verification passed in 34/36 control runs and 36/36 memory runs, with median tool calls of 5 and 7. It therefore did not show a tool-call reduction. Full results and limits live in <code>eval/codex/results-20261026.md</code>.</p>
+      </section>
+
+      <section class="doc-section" id="troubleshooting">
+        <h2>Troubleshooting</h2>
+
+        <h3>“EngBrain is not initialized here”</h3>
+        <p>Run <code>engbrain init</code> from inside the target repository. EngBrain resolves the Git root first; a folder without a repository cannot be initialized.</p>
+
+        <h3>“configured but engbrain is missing from PATH”</h3>
+        <p>The client configuration launches the bare <code>engbrain</code> command. Install it with <code>pipx install --editable .\openfire</code> or activate the virtual environment before starting the agent.</p>
+
+        <h3>SQLite FTS5 check fails</h3>
+        <p>Your interpreter's SQLite was built without FTS5. Use a python.org build, or a distribution package of <code>libsqlite3</code> compiled with <code>--enable-fts5</code>.</p>
+
+        <h3>Nothing appears in search after a fix</h3>
+        <p>The detector needs two failures of the same normalized command in one session, followed by an exit-code-0 run. Drafts also stay invisible until <code>engbrain review accept</code>.</p>
+
+        <h3>The pre-edit hook injects nothing</h3>
+        <p>That is the fail-open path: repository not initialized, file is <code>.env</code>/key/certificate, no accepted episode matches the path, or the 3-second budget expired.</p>
+      </section>
+
+      <section class="doc-section" id="limits">
+        <h2>Limits &amp; license</h2>
+        <ul>
+          <li>Redaction is best-effort and is not a security boundary.</li>
+          <li>Hook capture supports documented Claude Code <code>Bash</code> and <code>PowerShell</code> payloads and never blocks a tool call.</li>
+          <li>Only Claude Code gets automatic capture and pre-edit recall.</li>
+          <li>A fail-then-pass sequence does not attribute the pass to a specific edit.</li>
+          <li>Retrieval is lexical, with error signatures and anchors; embeddings are deliberately absent.</li>
+          <li>Data is local and project-scoped: no team sync, dashboard, or remote database.</li>
+        </ul>
+
+        <p style="margin-top:16px">MIT licensed. Source, issues, and the full build record are on <a class="inline" href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">GitHub</a>.</p>
+
+        <div class="doc-nav">
+          <a href="#commands"><span>Previous</span>Commands</a>
+          <a href="index.html#showcase"><span>Next</span>Watch the showcase</a>
+        </div>
+      </section>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__base">
+      <span>© <span id="year">2026</span> EngBrain · Arijit Roy</span>
+      <span><a href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">GitHub</a> · MIT</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js" defer></script>
+</body>
+</html>

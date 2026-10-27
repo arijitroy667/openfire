@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/site/index.html", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/site/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=300, must-revalidate" }]
+    },
+    {
+      "source": "/showcase/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    },
+    {
+      "source": "/site/(.*)",
+      "headers": [{ "key": "X-Content-Type-Options", "value": "nosniff" }]
+    }
+  ]
+}

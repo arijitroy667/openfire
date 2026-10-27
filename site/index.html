@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EngBrain — Local-first engineering memory for AI coding agents</title>
+<meta name="description" content="EngBrain records the failures, attempts, and evidence behind a fix, then serves it to Claude Code, Codex, Cursor, or any MCP client with Git-computed freshness." />
+<meta name="theme-color" content="#f3f4f2" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/theme.css" />
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="backdrop">
+  <div class="orb" style="width:520px;height:520px;left:-160px;top:-120px;background:rgba(150,196,240,.75)"></div>
+  <div class="orb" style="width:460px;height:460px;right:-140px;top:120px;background:rgba(247,214,180,.8)"></div>
+  <div class="orb" style="width:620px;height:620px;left:38%;bottom:-320px;background:rgba(186,170,238,.6)"></div>
+</div>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<div class="nav-wrap">
+  <nav class="nav" id="nav" aria-label="Primary">
+    <a class="brand" href="index.html">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4.5a3 3 0 0 0-3 3v1.2a2.8 2.8 0 0 0-2 2.7c0 .9.4 1.7 1.1 2.3a2.8 2.8 0 0 0 1.6 3.6A3 3 0 0 0 12 20a3 3 0 0 0 2.3-1.7 2.8 2.8 0 0 0 1.6-3.6c.7-.6 1.1-1.4 1.1-2.3a2.8 2.8 0 0 0-2-2.7V7.5a3 3 0 0 0-3-3Z" />
+          <path d="M12 9v6M9.8 11.6h4.4" />
+        </svg>
+      </span>
+      EngBrain
+    </a>
+
+    <div class="nav__links" id="navLinks">
+      <a class="nav__link" href="#problem">Problem</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#architecture">Architecture</a>
+      <a class="nav__link" href="#showcase">Showcase</a>
+      <a class="nav__link" href="docs.html">Docs</a>
+    </div>
+
+    <div class="nav__actions">
+      <a class="btn btn--ghost" href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.06 10.06 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+        GitHub
+      </a>
+      <a class="btn btn--primary" href="docs.html#quick-start">Get started</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<main id="main">
+
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <span class="eyebrow" data-reveal>Local-first memory for AI agents</span>
+        <h1 data-reveal style="--delay:60ms">Engineering memory that <span class="gradient-text">proves itself</span>.</h1>
+        <p class="lede" data-reveal style="--delay:120ms">
+          EngBrain records the failures, the attempts that did not work, and the evidence that a fix actually passed — then hands the accepted episode to your agent with Git-computed freshness. No hosted service. No embeddings to maintain.
+        </p>
+
+        <div class="hero__cta" data-reveal style="--delay:180ms">
+          <a class="btn btn--primary" href="docs.html#quick-start">
+            Read the docs
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn--glass" href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.06 10.06 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+            View source
+          </a>
+        </div>
+
+        <div class="hero__meta" data-reveal style="--delay:240ms">
+          <span class="chip"><span class="dot"></span>MIT licensed</span>
+          <span class="chip">Python 3.11+</span>
+          <span class="chip">SQLite + FTS5</span>
+          <span class="chip chip--teal">No network in the core</span>
+        </div>
+      </div>
+
+      <div class="hero__art" data-reveal style="--delay:160ms">
+        <div class="hero__glow" aria-hidden="true"></div>
+
+        <div class="terminal">
+          <div class="terminal__bar">
+            <div class="terminal__dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span class="terminal__title">engbrain — recall</span>
+          </div>
+          <div class="terminal__body">
+            <span class="ln"><span class="prompt">$</span> <span class="cmd">engbrain recall --query "pool exhausted" \</span></span>
+            <span class="ln">  <span class="cmd">--path src/db/pool.py</span></span>
+            <span class="ln"> </span>
+            <span class="ln"><span class="ok">1.</span> Pool exhaustion under parallel workers <span class="muted">[7c1f9a2e]</span></span>
+            <span class="ln">   <span class="muted">status=</span><span class="ok">verified</span> <span class="muted">evidence=</span>mechanical <span class="muted">staleness=</span><span class="ok">fresh</span></span>
+            <span class="ln">   <span class="muted">match=</span>path_anchor, full_text</span>
+            <span class="ln">   Concurrent workers exhausted the pool; raising the</span>
+            <span class="ln">   limit to 4 fixed the timeout.</span>
+            <span class="ln">   <span class="muted">- No commits touched the anchored paths since capture</span></span>
+            <span class="ln"> </span>
+            <span class="ln"><span class="prompt">$</span> <span class="muted">engbrain review accept 7c1f9a2e</span></span>
+            <span class="ln"><span class="ok">Accepted 7c1f9a2e as verified.</span></span>
+            <span class="ln"><span class="prompt">$</span> <span class="caret" aria-hidden="true"></span></span>
+          </div>
+        </div>
+
+        <div class="hero__badge hero__badge--fresh">
+          <span class="dot" style="color:var(--teal)"></span> anchored to 3 files
+        </div>
+        <div class="hero__badge hero__badge--draft">
+          <span class="dot" style="color:var(--amber)"></span> 1 draft awaiting review
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track">
+      <span class="marquee__item">Claude Code</span>
+      <span class="marquee__item">Codex</span>
+      <span class="marquee__item">Cursor</span>
+      <span class="marquee__item">VS Code</span>
+      <span class="marquee__item">Any MCP client</span>
+      <span class="marquee__item">SQLite FTS5</span>
+      <span class="marquee__item">Git anchors</span>
+      <span class="marquee__item">Human review</span>
+      <span class="marquee__item">Claude Code</span>
+      <span class="marquee__item">Codex</span>
+      <span class="marquee__item">Cursor</span>
+      <span class="marquee__item">VS Code</span>
+      <span class="marquee__item">Any MCP client</span>
+      <span class="marquee__item">SQLite FTS5</span>
+      <span class="marquee__item">Git anchors</span>
+      <span class="marquee__item">Human review</span>
+    </div>
+  </div>
+
+  <!-- Problem -->
+  <section class="section" id="problem">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>The problem</span>
+        <h2 data-reveal style="--delay:60ms">A debugging session creates the knowledge you need six weeks later — and almost none of it survives.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">Transcripts are not the answer. They are huge, noisy, full of secrets, and they carry no notion of whether the advice still matches the repository.</p>
+      </div>
+
+      <div class="grid problem-grid">
+        <article class="card" data-reveal>
+          <div class="card__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v5h5"/></svg>
+          </div>
+          <div class="problem-stat">01 — repetition</div>
+          <h3>Failed attempts get repeated</h3>
+          <p>An agent tries the approach you already ruled out, because nothing recorded that it failed and why.</p>
+        </article>
+
+        <article class="card" data-reveal style="--delay:60ms">
+          <div class="card__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+          </div>
+          <div class="problem-stat">02 — context loss</div>
+          <h3>Reasoning lives in a chat</h3>
+          <p>The workaround works, but the constraint that forced it is gone the moment the session scrolls away.</p>
+        </article>
+
+        <article class="card" data-reveal style="--delay:120ms">
+          <div class="card__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+          </div>
+          <div class="problem-stat">03 — rot</div>
+          <h3>Notes outlive their truth</h3>
+          <p>"Raise the connection pool" was right six months ago. The pool was rewritten twice since, and nothing says so.</p>
+        </article>
+
+        <article class="card" data-reveal style="--delay:180ms">
+          <div class="card__icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 4v5c0 4.4-3 8.2-7 9-4-.8-7-4.6-7-9V7Z"/></svg>
+          </div>
+          <div class="problem-stat">04 — proof</div>
+          <h3>Opinions look like evidence</h3>
+          <p>Without provenance you cannot separate an observed pass from a confident guess written in a markdown file.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>How it works</span>
+        <h2 data-reveal style="--delay:60ms">Capture, review, recall. Nothing skips the human gate.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">Claude Code hooks record what the shell actually returned. Two or more failures followed by a passing run become a draft — never a searchable memory.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step" data-reveal>
+          <div class="step__num">01<span></span></div>
+          <div>
+            <h3>Capture the shell</h3>
+            <p>Asynchronous <code>PostToolUse</code> and <code>PostToolUseFailure</code> hooks store the redacted command, the exit code, and the last 2 KB of output.</p>
+          </div>
+          <div class="step__aside">events expire after 7 days<br />secrets scrubbed before storage</div>
+        </article>
+
+        <article class="step" data-reveal style="--delay:60ms">
+          <div class="step__num">02<span></span></div>
+          <div>
+            <h3>Detect the recovery</h3>
+            <p>Two failures of the same normalized command, then an exit code of 0, produce a draft with attempts, a diff summary, and the passing commit.</p>
+          </div>
+          <div class="step__aside">session-scoped · deduplicated<br />never claims which edit fixed it</div>
+        </article>
+
+        <article class="step" data-reveal style="--delay:120ms">
+          <div class="step__num">03<span></span></div>
+          <div>
+            <h3>Review it as a human</h3>
+            <p><code>engbrain review</code> lists drafts. Edit the narrative, then accept or reject. Only acceptance moves a record into search.</p>
+          </div>
+          <div class="step__aside">mechanical evidence → verified<br />everything else stays unverified</div>
+        </article>
+
+        <article class="step" data-reveal style="--delay:180ms">
+          <div class="step__num">04<span></span></div>
+          <div>
+            <h3>Recall before the edit</h3>
+            <p>A synchronous <code>PreToolUse</code> hook searches the file's path anchors and injects up to three matching episodes with freshness reasons.</p>
+          </div>
+          <div class="step__aside">3 s budget · fails open<br />skips .env, keys, certificates</div>
+        </article>
+
+        <article class="step" data-reveal style="--delay:240ms">
+          <div class="step__num">05<span></span></div>
+          <div>
+            <h3>Re-rank with evidence</h3>
+            <p>FTS5 text, exact error signatures, and path anchors are fused with reciprocal-rank fusion, then nudged by evidence grade and staleness.</p>
+          </div>
+          <div class="step__aside">RRF k=60 · max 5 results<br />superseded records never appear</div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="section" id="architecture">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>Architecture</span>
+        <h2 data-reveal style="--delay:60ms">One engine, three front doors, one local database.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">The CLI, the stdio MCP server, and the hook adapter are thin layers over the same Python engine. Everything is scoped to the repository the process started in.</p>
+      </div>
+
+      <div class="arch" data-reveal>
+        <svg viewBox="0 0 900 430" role="img" aria-label="Architecture: coding agents connect through the MCP server or Claude Code hooks to the memory engine, retrieval, and staleness modules, which read SQLite, Git, and dependency manifests.">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="rgba(15,143,116,.85)" />
+    </marker>
+    <marker id="arrow-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="rgba(120,134,152,.75)" />
+    </marker>
+  </defs>
+
+  <text class="arch-label" x="40" y="22">AGENTS</text>
+  <text class="arch-label" x="40" y="138">INTERFACES</text>
+  <text class="arch-label" x="40" y="238">ENGINE</text>
+  <text class="arch-label" x="40" y="338">STORAGE &amp; REPO</text>
+
+  <!-- agents -->
+  <g class="arch-node">
+    <rect x="40" y="40" width="180" height="46" rx="12" />
+    <text x="130" y="68" text-anchor="middle">Claude Code</text>
+  </g>
+  <g class="arch-node">
+    <rect x="240" y="40" width="180" height="46" rx="12" />
+    <text x="330" y="68" text-anchor="middle">Codex</text>
+  </g>
+  <g class="arch-node">
+    <rect x="440" y="40" width="180" height="46" rx="12" />
+    <text x="530" y="68" text-anchor="middle">Cursor</text>
+  </g>
+  <g class="arch-node">
+    <rect x="640" y="40" width="180" height="46" rx="12" />
+    <text x="730" y="68" text-anchor="middle">VS Code</text>
+  </g>
+
+  <!-- agent bus -->
+  <path class="arch-flow arch-flow--soft" d="M130 86 V110 M330 86 V110 M530 86 V110 M730 86 V110 M130 110 H730" />
+
+  <path class="arch-flow" marker-end="url(#arrow)" d="M320 110 V146" />
+  <path class="arch-flow" marker-end="url(#arrow)" d="M580 110 V146" />
+  <text class="arch-label" x="332" y="126">hooks</text>
+  <text class="arch-label" x="592" y="126">stdio mcp</text>
+
+  <!-- interfaces -->
+  <g class="arch-node">
+    <rect x="210" y="150" width="220" height="52" rx="12" />
+    <text x="320" y="172" text-anchor="middle">Hook adapter</text>
+    <text class="sub" x="320" y="190" text-anchor="middle">engbrain hook event</text>
+  </g>
+  <g class="arch-node">
+    <rect x="470" y="150" width="220" height="52" rx="12" />
+    <text x="580" y="172" text-anchor="middle">MCP server</text>
+    <text class="sub" x="580" y="190" text-anchor="middle">engbrain mcp serve</text>
+  </g>
+
+  <!-- interfaces to engine -->
+  <path class="arch-flow" marker-end="url(#arrow)" d="M320 202 V246" />
+  <path class="arch-flow" marker-end="url(#arrow)" d="M580 202 V246" />
+  <path class="arch-flow arch-flow--soft" marker-end="url(#arrow-soft)" d="M492 202 C470 226 436 230 404 246" />
+
+  <!-- engine -->
+  <g class="arch-node">
+    <rect x="210" y="250" width="220" height="52" rx="12" />
+    <text x="320" y="272" text-anchor="middle">Memory engine</text>
+    <text class="sub" x="320" y="290" text-anchor="middle">episodes · review · anchors</text>
+  </g>
+  <g class="arch-node">
+    <rect x="470" y="250" width="220" height="52" rx="12" />
+    <text x="580" y="272" text-anchor="middle">Retrieval</text>
+    <text class="sub" x="580" y="290" text-anchor="middle">FTS5 · signatures · RRF</text>
+  </g>
+  <g class="arch-node">
+    <rect x="730" y="250" width="140" height="52" rx="12" />
+    <text x="800" y="280" text-anchor="middle">Staleness</text>
+  </g>
+
+  <path class="arch-flow arch-flow--soft" marker-end="url(#arrow-soft)" d="M690 276 H726" />
+
+  <!-- engine to storage -->
+  <path class="arch-flow" marker-end="url(#arrow)" d="M320 302 V346" />
+  <path class="arch-flow arch-flow--soft" marker-end="url(#arrow-soft)" d="M540 302 C520 330 470 336 432 348" />
+  <path class="arch-flow arch-flow--soft" marker-end="url(#arrow-soft)" d="M800 302 C800 326 720 330 654 348" />
+  <path class="arch-flow" marker-end="url(#arrow)" d="M800 302 V346" />
+
+  <!-- storage -->
+  <g class="arch-node">
+    <rect x="210" y="350" width="220" height="46" rx="12" />
+    <text x="320" y="378" text-anchor="middle">SQLite + FTS5</text>
+  </g>
+  <g class="arch-node">
+    <rect x="470" y="350" width="220" height="46" rx="12" />
+    <text x="580" y="378" text-anchor="middle">Git CLI</text>
+  </g>
+  <g class="arch-node">
+    <rect x="730" y="350" width="140" height="46" rx="12" />
+    <text x="800" y="378" text-anchor="middle">Manifests</text>
+  </g>
+</svg>
+
+        <div class="arch-legend">
+          <span><i></i> request or subprocess call</span>
+          <span><i class="soft"></i> read / write</span>
+          <span class="mono" style="font-size:.72rem;color:var(--dim)">db: .engbrain/engbrain.db · WAL</span>
+        </div>
+
+        <p class="arch-hint">← scroll the diagram →</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evidence and staleness -->
+  <section class="section" id="evidence">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>Evidence, not vibes</span>
+        <h2 data-reveal style="--delay:60ms">Every record says how it was proven and how old it is.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">An anchor is a file, a dependency version, or a commit. Staleness is recomputed from Git and your manifests on every read — never from a timestamp someone typed.</p>
+      </div>
+
+      <div class="evidence">
+        <div class="panel" data-reveal>
+          <div class="panel__head">
+            <h3>Evidence grades</h3>
+            <span class="chip chip--teal">human accepted</span>
+          </div>
+
+          <div class="grade">
+            <span class="grade__key">mechanical</span>
+            <p>Observed command outcomes. Becomes <strong>verified</strong> only after a person accepts it.</p>
+          </div>
+          <div class="grade">
+            <span class="grade__key grade__key--amber">asserted</span>
+            <p>Written by an agent with supporting text. Never upgrades itself.</p>
+          </div>
+          <div class="grade">
+            <span class="grade__key grade__key--dim">none</span>
+            <p>Hand-written notes. Accepted immediately, permanently unverified.</p>
+          </div>
+
+          <div class="doc-callout" style="margin-top:20px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16.5" r=".6" fill="currentColor"/></svg>
+            <span>A fail-then-pass sequence is evidence that the outcome changed — not proof of which edit caused it.</span>
+          </div>
+        </div>
+
+        <div class="panel" data-reveal style="--delay:80ms">
+          <div class="panel__head">
+            <h3>Freshness</h3>
+            <span class="chip">computed from Git</span>
+          </div>
+
+          <div class="stale-tabs" role="tablist" aria-label="Staleness levels">
+            <button class="stale-tab is-active" role="tab" aria-selected="true" data-level="fresh">fresh</button>
+            <button class="stale-tab" role="tab" aria-selected="false" data-level="drifted">drifted</button>
+            <button class="stale-tab" role="tab" aria-selected="false" data-level="stale">stale</button>
+            <button class="stale-tab" role="tab" aria-selected="false" data-level="unknown">unknown</button>
+          </div>
+
+          <div class="stale-view">
+            <div class="stale-pane is-active" data-pane="fresh">
+              <div class="row"><span>staleness=</span><strong style="color:var(--teal)">fresh</strong></div>
+              <div class="row"><span>·</span><span>No commits touched the anchored paths since capture</span></div>
+              <div class="row"><span>·</span><span>Dependency urllib3 remains at 1.26.18</span></div>
+            </div>
+            <div class="stale-pane" data-pane="drifted">
+              <div class="row"><span>staleness=</span><strong style="color:var(--amber)">drifted</strong></div>
+              <div class="row"><span>·</span><span>3 commit(s) touched anchored paths since capture</span></div>
+              <div class="row"><span>·</span><span>Anchored paths have uncommitted changes: src/pool.py</span></div>
+            </div>
+            <div class="stale-pane" data-pane="stale">
+              <div class="row"><span>staleness=</span><strong style="color:var(--red)">stale</strong></div>
+              <div class="row"><span>·</span><span>Anchored path was deleted or renamed: src/pool.py</span></div>
+              <div class="row"><span>·</span><span>Dependency urllib3 changed major version: 1.26.18 to 2.0.0</span></div>
+            </div>
+            <div class="stale-pane" data-pane="unknown">
+              <div class="row"><span>staleness=</span><strong>unknown</strong></div>
+              <div class="row"><span>·</span><span>The capture commit is missing or is not an ancestor of HEAD</span></div>
+              <div class="row"><span>·</span><span>Git could not count commits touching the anchored paths</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase video -->
+  <section class="section" id="showcase">
+    <div class="container">
+      <div class="section-head section-head--center">
+        <span class="eyebrow" data-reveal style="justify-content:center">Product tour</span>
+        <h2 data-reveal style="--delay:60ms">See the loop run end to end.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">Four acts, one loop: capture, review, recall, and freshness — recorded end to end on a real repository.</p>
+      </div>
+
+      <div class="video-shell" data-reveal>
+        <div class="video-frame" id="videoFrame">
+          <video id="showcaseVideo" preload="none" playsinline controls controlslist="nodownload" poster="assets/showcase-poster.jpg">
+            <source src="../showcase/engBrain_showcase.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+
+          <div class="video-overlay" id="videoOverlay">
+            <button class="video-play" id="videoPlay" aria-label="Play the EngBrain showcase">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+            </button>
+            <div class="video-meta">
+              <span class="chip chip--teal">2:51 walkthrough</span>
+              <span class="chip">capture → recall</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-chapters">
+          <div class="video-chapter"><span>01</span>The problem</div>
+          <div class="video-chapter"><span>02</span>The solution</div>
+          <div class="video-chapter"><span>03</span>Proof, then freshness</div>
+          <div class="video-chapter"><span>04</span>Get started</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agents -->
+  <section class="section" id="agents">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>Connect</span>
+        <h2 data-reveal style="--delay:60ms">Works with the agents you already run.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">One command writes project-level configuration. Claude Code also gets capture and pre-edit recall hooks; every other client gets the MCP tools.</p>
+      </div>
+
+      <div class="grid agents">
+        <article class="agent" data-reveal>
+          <div class="agent__top">
+            <span class="agent__name">Claude Code</span>
+            <span class="chip chip--teal">full loop</span>
+          </div>
+          <p>MCP tools, automatic command capture, and synchronous pre-edit recall with a 3-second budget.</p>
+          <code class="agent__cmd">engbrain init --client claude-code</code>
+        </article>
+
+        <article class="agent" data-reveal style="--delay:60ms">
+          <div class="agent__top">
+            <span class="agent__name">Codex</span>
+            <span class="chip">MCP only</span>
+          </div>
+          <p>Project-scoped stdio entry in <code>.codex/config.toml</code> for trusted projects.</p>
+          <code class="agent__cmd">engbrain init --client codex</code>
+        </article>
+
+        <article class="agent" data-reveal style="--delay:120ms">
+          <div class="agent__top">
+            <span class="agent__name">Cursor</span>
+            <span class="chip">MCP only</span>
+          </div>
+          <p>Registers <code>mcpServers.engbrain</code> in <code>.cursor/mcp.json</code>, scoped with <code>${workspaceFolder}</code>.</p>
+          <code class="agent__cmd">engbrain init --client cursor</code>
+        </article>
+
+        <article class="agent" data-reveal style="--delay:180ms">
+          <div class="agent__top">
+            <span class="agent__name">VS Code</span>
+            <span class="chip">MCP only</span>
+          </div>
+          <p>Writes <code>.vscode/mcp.json</code> using the <code>servers</code> key, then waits for approval.</p>
+          <code class="agent__cmd">engbrain init --client vscode</code>
+        </article>
+
+        <article class="agent" data-reveal style="--delay:240ms">
+          <div class="agent__top">
+            <span class="agent__name">Any MCP client</span>
+            <span class="chip">stdio</span>
+          </div>
+          <p>Point the client at <code>engbrain mcp serve --root &lt;repo&gt;</code>. Three tools, JSON over stdio, no daemon.</p>
+          <code class="agent__cmd">engbrain mcp serve --root .</code>
+        </article>
+
+        <article class="agent" data-reveal style="--delay:300ms">
+          <div class="agent__top">
+            <span class="agent__name">Just the CLI</span>
+            <span class="chip">no client</span>
+          </div>
+          <p>Initialize without a client and drive capture, review, and recall yourself.</p>
+          <code class="agent__cmd">engbrain init</code>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Commands -->
+  <section class="section" id="commands">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>Command line</span>
+        <h2 data-reveal style="--delay:60ms">Everything is one binary.</h2>
+        <p class="lede" data-reveal style="--delay:120ms">Sixteen commands, no server to babysit. The full reference lives in the docs.</p>
+      </div>
+
+      <div data-reveal>
+        <div class="tabs" role="tablist" aria-label="Command examples">
+          <button class="tab is-active" role="tab" aria-selected="true" data-tab="setup">Setup</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="review">Review</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="recall">Recall</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="eval">Evaluate</button>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-panel__head">
+            <span class="code-panel__title" data-tab-title>terminal</span>
+            <button class="copy" data-copy>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+              Copy
+            </button>
+          </div>
+
+          <pre class="tab-pane is-active" data-pane="setup"><code>pipx install --editable .\openfire
+
+cd C:\work\my-project
+engbrain init --client claude-code
+engbrain doctor
+engbrain status</code></pre>
+
+          <pre class="tab-pane" data-pane="review"><code>engbrain review
+engbrain review edit EPISODE_ID --solution "Raised the pool limit to 4" --verification "check_pool.py passes"
+engbrain review accept EPISODE_ID</code></pre>
+
+          <pre class="tab-pane" data-pane="recall"><code>engbrain recall --query "connection pool exhausted" --query "workers cannot get a connection" --path src/pool.py
+engbrain episode show EPISODE_ID
+engbrain feedback EPISODE_ID helpful</code></pre>
+
+          <pre class="tab-pane" data-pane="eval"><code>engbrain eval
+engbrain eval --json
+uv run pytest -q</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Numbers -->
+  <section class="section section--tight" id="numbers">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow" data-reveal>Measured, with caveats</span>
+        <h2 data-reveal style="--delay:60ms">Small studies. Reported honestly.</h2>
+      </div>
+
+      <div class="stats" data-reveal>
+        <div class="stat">
+          <div class="stat__value" data-count="72">72</div>
+          <div class="stat__label">Codex sessions</div>
+          <div class="stat__note">12 fixtures × 3 trials × 2 arms</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value" data-count="36">36/36</div>
+          <div class="stat__label">memory runs verified</div>
+          <div class="stat__note">34/36 for the control arm</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value" data-count="1">1.00</div>
+          <div class="stat__label">lexical Recall@5</div>
+          <div class="stat__note">0.75 paraphrase, synthetic corpus</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value">0</div>
+          <div class="stat__label">network calls in the core</div>
+          <div class="stat__note">local SQLite, local Git</div>
+        </div>
+      </div>
+
+      <p class="dim" style="margin-top:20px;font-size:.82rem;max-width:70ch" data-reveal>
+        Median tool calls to pass were 5 without memory and 7 with memory, so this study did not show a speed-up. The bundled retrieval fixture is synthetic; it does not establish public-issue quality. Full results and limits are in the repository.
+      </p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section" id="start">
+    <div class="container">
+      <div class="cta" data-reveal>
+        <span class="eyebrow" style="justify-content:center">Start local</span>
+        <h2>Give your agent a memory that ages honestly.</h2>
+        <p class="lede">Clone it, initialize one repository, and let the next debugging session leave something behind.</p>
+        <div class="cta__actions">
+          <a class="btn btn--primary" href="docs.html#quick-start">
+            Quick start
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn--glass" href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49v-1.7c-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.82c0 .27.18.6.69.49A10.06 10.06 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+            Star on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <a class="brand" href="index.html">
+          <span class="brand__mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4.5a3 3 0 0 0-3 3v1.2a2.8 2.8 0 0 0-2 2.7c0 .9.4 1.7 1.1 2.3a2.8 2.8 0 0 0 1.6 3.6A3 3 0 0 0 12 20a3 3 0 0 0 2.3-1.7 2.8 2.8 0 0 0 1.6-3.6c.7-.6 1.1-1.4 1.1-2.3a2.8 2.8 0 0 0-2-2.7V7.5a3 3 0 0 0-3-3Z" />
+              <path d="M12 9v6M9.8 11.6h4.4" />
+            </svg>
+          </span>
+          EngBrain
+        </a>
+        <p>Local-first, evidence-graded engineering memory for AI coding agents. MIT licensed, no hosted service.</p>
+      </div>
+
+      <div class="footer__links">
+        <div class="footer__col">
+          <h4>Product</h4>
+          <a href="#problem">The problem</a>
+          <a href="#how">How it works</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#showcase">Showcase</a>
+        </div>
+        <div class="footer__col">
+          <h4>Documentation</h4>
+          <a href="docs.html">Overview</a>
+          <a href="docs.html#quick-start">Quick start</a>
+          <a href="docs.html#claude-code">Claude Code</a>
+          <a href="docs.html#commands">Command reference</a>
+        </div>
+        <div class="footer__col">
+          <h4>Project</h4>
+          <a href="https://github.com/arijitroy667/openfire" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://github.com/arijitroy667/openfire/blob/main/README.md" target="_blank" rel="noreferrer">README</a>
+          <a href="https://github.com/arijitroy667/openfire/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT license</a>
+          <a href="https://github.com/arijitroy667/openfire/issues" target="_blank" rel="noreferrer">Issues</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__base">
+      <span>© <span id="year">2026</span> EngBrain · Arijit Roy</span>
+      <span class="mono" style="font-size:.72rem;color:var(--dim)">python 3.11+ · sqlite fts5 · stdio mcp</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js" defer></script>
+</body>
+</html>
