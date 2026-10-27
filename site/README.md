@@ -18,7 +18,7 @@ site/
 
 ## Preview
 
-Serve the repository root so the page can reach the video in `../showcase/`:
+Any static server works; serve `site/` (or the repository root) and open the page:
 
 ```powershell
 python -m http.server 8765
@@ -48,12 +48,12 @@ where `entry.js` contains `export * from "motion";`.
 
 ## Video
 
-The tour on the landing page points at `showcase/engBrain_showcase.mp4` (relative path `../showcase/...`). To swap in a different cut, replace that file or edit the `<source>` element in `index.html`. Leave `preload="none"` in place so the 70 MB file is not fetched until someone presses play.
+The tour on the landing page points at `assets/showcase.mp4`. To swap in a different cut, replace that file or edit the `<source>` element in `index.html`. Leave `preload="none"` in place so the 70 MB file is not fetched until someone presses play.
 
 The frame stays in place before play because `assets/showcase-poster.jpg` is the frame's CSS background (and the video's `poster`). If you swap the video, re-grab a still so the poster matches, e.g.:
 
 ```powershell
-ffmpeg -ss 13 -i showcase/engBrain_showcase.mp4 -frames:v 1 -vf "crop=1800:1012:60:0,scale=1600:900" -q:v 3 site/assets/showcase-poster.jpg
+ffmpeg -ss 13 -i site/assets/showcase.mp4 -frames:v 1 -vf "crop=1800:1012:60:0,scale=1600:900" -q:v 3 site/assets/showcase-poster.jpg
 ```
 
 The `crop` drops the reel's own act/timer footer, so the still reads as a clean product frame.
@@ -74,4 +74,4 @@ Any static host works. The repository root ships a `vercel.json` that redirects 
 vercel deploy --prod
 ```
 
-`showcase/` stays at the repository root so `../showcase/...` keeps resolving. If you publish only `site/`, move the video inside `site/assets/` and update the `<source>` path.
+The deployable root is `site/` itself: `vercel deploy ./site --prod` serves `index.html` at `/`, with the video, poster and assets beside it.

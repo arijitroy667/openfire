@@ -580,7 +580,7 @@ The step-by-step recording plan, including the ordering that keeps an accepted e
 python -m http.server 8765
 ~~~
 
-Open <http://127.0.0.1:8765/site/index.html>. The landing page embeds `showcase/engBrain_showcase.mp4`, so serve from the repository root rather than opening the files directly. Palette, typography, and motion are documented in [`site/DESIGN.md`](site/DESIGN.md).
+Open <http://127.0.0.1:8765/site/index.html>. The landing page embeds `site/assets/showcase.mp4`, so serve over HTTP rather than opening the files directly. Palette, typography, and motion are documented in [`site/DESIGN.md`](site/DESIGN.md).
 
 ## Evaluation
 
