@@ -1,21 +1,188 @@
-MIT License
+ENGBRAIN COMMERCIAL LICENSE
+All Rights Reserved
 
-Copyright (c) 2026 Arijit Roy
+Version 1.0
+Effective 27 October 2026
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Copyright (c) 2026 Arijit Roy. All rights reserved.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+THIS IS NOT A FREE, OPEN SOURCE, OR PUBLIC DOMAIN LICENSE. It grants you no
+right to use the software. Any use of the Software requires a paid commercial
+license granted in writing by the Licensor.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. DEFINITIONS
+
+   1.1 "Licensor" means Arijit Roy, the copyright holder of the Software.
+
+   1.2 "Software" means the EngBrain source code, binaries, command-line tools,
+       MCP server, prompts, schema, documentation, and any accompanying
+       materials in this repository, including all updates and derivative works
+       of them made by the Licensor.
+
+   1.3 "You" means any natural person or legal entity that accesses, downloads,
+       installs, executes, or otherwise handles the Software.
+
+   1.4 "Use" means any exercise of a right that the Licensor holds in the
+       Software, including to run, install, integrate, modify, translate,
+       compile, distribute, publish, sublicense, sell, host, make available over
+       a network, or incorporate into another product or service.
+
+   1.5 "Commercial License" means a license granted by the Licensor under a
+       separate written agreement or order form that states the licensed scope,
+       fees, term, and any permitted modifications.
+
+2. NO LICENSE BY PUBLICATION
+
+   2.1 Making the Software visible or readable — in this repository, on a
+       public website, in a package index, or anywhere else — is not a grant of
+       any license. Reading the source for the purpose of evaluating whether to
+       purchase a Commercial License does not authorize Use.
+
+   2.2 No license, express or implied, is granted by estoppel, by course of
+       dealing, or by the delivery of the Software to You.
+
+   2.3 Nothing in this license withdraws rights that a recipient validly
+       obtained under a different license for a specific earlier release of the
+       Software. For every other copy, this license is the only terms that
+       apply.
+
+3. LICENSE REQUIRED FOR ALL USE
+
+   3.1 You may not Use the Software without a Commercial License, whether the
+       Use is personal, internal, academic, non-commercial, or commercial.
+
+   3.2 Without limiting Section 3.1, You may not, without a Commercial License:
+
+       (a) install or execute the Software on any machine You control or on any
+           machine operated for Your benefit;
+
+       (b) register the Software's MCP server, hooks, or commands with any agent
+           or client, or run the `engbrain` command-line interface;
+
+       (c) copy, mirror, or archive the Software, in whole or in part;
+
+       (d) modify, adapt, translate, or create derivative works of the Software,
+           or remove, obscure, or alter any copyright, license, or attribution
+           notice;
+
+       (e) distribute, publish, sublicense, rent, lease, lend, sell, or
+           otherwise transfer the Software or any copy of it;
+
+       (f) make the Software available to third parties, including by hosting it
+           as a service, embedding it in another product, or shipping it inside
+           a container image, installer, or distribution;
+
+       (g) use the Software or its output to train, fine-tune, or evaluate a
+           machine-learning model offered to third parties; or
+
+       (h) use the Software to provide paid services to third parties.
+
+   3.3 No evaluation, trial, or proof-of-concept right is granted by this
+       license. Any evaluation period must be agreed in writing with the
+       Licensor before Use begins.
+
+4. RIGHTS UNDER A COMMERCIAL LICENSE
+
+   4.1 A Commercial License grants only the rights it expressly states. Unless
+       the Commercial License says otherwise, those rights are non-exclusive,
+       non-transferable, non-sublicensable, limited to the licensed scope, term,
+       seats, environments, and affiliates named in it, and terminable under its
+       terms.
+
+   4.2 Where a Commercial License is silent on a matter, this license governs,
+       except that the Commercial License controls over any conflict.
+
+   4.3 Fees are payable as stated in the Commercial License. Late or unpaid fees
+       suspend the licensed rights.
+
+5. CONTRIBUTIONS
+
+   5.1 If You submit code, documentation, or other material to the Licensor for
+       inclusion in the Software, You grant the Licensor a perpetual,
+       worldwide, irrevocable, royalty-free, transferable, and sublicensable
+       license to use, reproduce, modify, distribute, and commercialize that
+       contribution, and You represent that You have the right to grant it.
+
+   5.2 You retain copyright in Your contribution. Submitting a contribution does
+       not grant You any right to Use the Software.
+
+6. THIRD-PARTY COMPONENTS
+
+   6.1 The Software includes third-party components listed in
+       THIRD_PARTY_NOTICES.md. Those components remain governed by their own
+       licenses, which prevail over this license for those components.
+
+   6.2 This license does not restrict any right You have under a third-party
+       component's own license with respect to that component alone.
+
+7. TERM AND TERMINATION
+
+   7.1 This license applies for as long as the Software is protected by
+       copyright. A Commercial License runs for the term it states.
+
+   7.2 Any breach of this license or of a Commercial License terminates the
+       licensed rights automatically and without notice.
+
+   7.3 On termination You must stop all Use immediately and destroy every copy
+       of the Software in Your possession or control, including copies in build
+       caches, artifacts, container images, and backups, and confirm that
+       destruction in writing if the Licensor asks.
+
+   7.4 Sections 2, 3, 5, 6, 8, 9, 10, and 11 survive termination.
+
+8. NO WARRANTY
+
+   8.1 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+       OR IMPLIED, INCLUDING ANY WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+       PARTICULAR PURPOSE, TITLE, OR NON-INFRINGEMENT.
+
+   8.2 THE LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL BE ERROR-FREE OR
+       UNINTERRUPTED, OR THAT ANY MEMORY, EVIDENCE, OR STALENESS LABEL IT
+       PRODUCES IS ACCURATE OR SUITABLE FOR ANY DECISION. YOU ARE RESPONSIBLE
+       FOR REVIEWING ANY OUTPUT BEFORE RELYING ON IT.
+
+9. LIMITATION OF LIABILITY
+
+   9.1 TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE LICENSOR IS NOT LIABLE FOR
+       ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR
+       FOR LOST PROFITS, REVENUE, DATA, OR GOODWILL, ARISING OUT OF OR RELATED
+       TO THE SOFTWARE OR THIS LICENSE, EVEN IF ADVISED OF THE POSSIBILITY.
+
+   9.2 THE LICENSOR'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATED TO
+       THIS LICENSE IS LIMITED TO THE FEES YOU PAID THE LICENSOR FOR THE
+       SOFTWARE IN THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE CLAIM,
+       OR TO ZERO IF YOU PAID NO FEES.
+
+   9.3 Nothing in this license excludes liability that cannot be excluded under
+       applicable law.
+
+10. GOVERNING LAW AND DISPUTES
+
+   10.1 This license is governed by the laws of India, excluding its
+        conflict-of-laws rules and the United Nations Convention on Contracts
+        for the International Sale of Goods.
+
+   10.2 The courts having jurisdiction over the Licensor's principal place of
+        business have exclusive jurisdiction over any dispute arising out of or
+        related to this license or the Software.
+
+11. GENERAL
+
+   11.1 This license is the entire agreement between You and the Licensor about
+        the Software, except where a Commercial License adds to it.
+
+   11.2 If a provision is held unenforceable, it is limited to the minimum extent
+        necessary and the remaining provisions stay in force.
+
+   11.3 You may not assign this license or a Commercial License without the
+        Licensor's prior written consent. The Licensor may assign freely.
+
+   11.4 A failure to enforce a provision is not a waiver of it.
+
+12. HOW TO OBTAIN A COMMERCIAL LICENSE
+
+    Write to arijitroy0445@gmail.com with the intended scope: who will use the
+    Software, how many seats and environments, and whether it will be embedded
+    in a product or offered as a service. The Licensor will reply with terms and
+    pricing. No right to Use the Software exists until a Commercial License is
+    signed or an order is accepted in writing.

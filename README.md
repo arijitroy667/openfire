@@ -645,4 +645,4 @@ Repository invariants, including why agent proposals cannot self-verify and why 
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Proprietary. EngBrain is published for transparency and security review only; no right to install, run, modify, distribute, or embed it is granted by this repository. Any use, including internal and non-commercial use, requires a paid commercial license. Terms are in [LICENSE](LICENSE); licensing enquiries go to <arijitroy0445@gmail.com>. Bundled third-party components keep their own licenses, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

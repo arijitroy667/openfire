@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Local-first, evidence-graded episodic memory for AI coding agents"
 readme = "README.md"
 requires-python = ">=3.11"
-license = "MIT"
+license = { file = "LICENSE" }
 authors = [{ name = "Arijit Roy" }]
 dependencies = [
   "mcp>=2.0,<3.0",

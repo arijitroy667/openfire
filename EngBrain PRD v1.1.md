@@ -1,10 +1,10 @@
-# EngBrain: Product Requirements Document v1.1
+﻿# EngBrain: Product Requirements Document v1.1
 
-**Version:** 1.1 | **Status:** Build spec for the 24-hour solo hackathon | **Author:** Ariz (Arijit Roy) | **Date:** 2026-10-26 | **Supersedes:** v1.0 | **License:** MIT (proposed)
+**Version:** 1.1 | **Status:** Build spec for the 24-hour solo hackathon | **Author:** Ariz (Arijit Roy) | **Date:** 2026-10-26 | **Supersedes:** v1.0 | **License:** Commercial, proprietary
 
 ## 1. Summary
 
-EngBrain is a local-first, open-source memory layer for AI coding agents. It records what was tried, what failed, and what was verified to work in a repository, then serves that history to any MCP-compatible agent when it is relevant. Every memory carries graded evidence and a computed staleness label, so an agent can tell a verified fix on unchanged code from an old guess about code that has since been rewritten.
+EngBrain is a local-first, source-available memory layer for AI coding agents. It records what was tried, what failed, and what was verified to work in a repository, then serves that history to any MCP-compatible agent when it is relevant. Every memory carries graded evidence and a computed staleness label, so an agent can tell a verified fix on unchanged code from an old guess about code that has since been rewritten.
 
 **Pitch:** Agents forget failed attempts between sessions. EngBrain remembers them, proves them, and flags them when they go stale.
 
@@ -322,9 +322,9 @@ Realistic solo productive time is about 16 to 18 hours; the plan assumes the cut
 | Memory space is crowded | High | Medium | Position on evidence, staleness, and results; re-check competitors before launch |
 | Scope creep and 24-hour overrun | High | High | Cut order, no-go rule, buffer block |
 
-## 17. Open-source readiness checklist
+## 17. Release readiness checklist
 
-- MIT license, README with a three-minute quickstart, CONTRIBUTING.md
+- Commercial license, README with a three-minute quickstart, CONTRIBUTING.md
 - Install in two commands: `pipx install` the package, then `engbrain init --client claude-code`
 - CI running pytest; `engbrain doctor` output documented
 - Demo recording and published benchmark results with scripts
