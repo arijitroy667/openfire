@@ -1,0 +1,29 @@
+{
+  "name": "engbrain-upstream-codex-v1",
+  "cases": [
+    {
+      "id": "click-2952",
+      "repo": "https://github.com/pallets/click.git",
+      "pull_ref": "refs/pull/2956/head",
+      "base": "5c1239b0116b66492cdd0848144ab3c78a04495a",
+      "tests": "9caedb9206103dfb5465e1916bc2f13b9c10c0e4",
+      "test_files": ["tests/test_options.py"],
+      "implementation_files": ["src/click/core.py"],
+      "test_command": ["python", "-m", "pytest", "tests/test_options.py", "-k", "boolean_envvar_normalization", "-q"],
+      "issue": "https://github.com/pallets/click/issues/2952",
+      "description": "Boolean flag envvar and default reconciliation"
+    },
+    {
+      "id": "click-3059-upstream",
+      "repo": "https://github.com/pallets/click.git",
+      "pull_ref": "refs/pull/3507/head",
+      "base": "8240d25bdbb8c081b745199620b8f2fe03b10579",
+      "tests": "665736bc85a19a7a2357c071394b4a545617faa3",
+      "test_files": ["tests/test_commands.py"],
+      "implementation_files": ["src/click/core.py"],
+      "test_command": ["python", "-m", "pytest", "tests/test_commands.py", "-k", "test_subcommand_metavar_marks_optional", "-q"],
+      "issue": "https://github.com/pallets/click/issues/3059",
+      "description": "Optional subcommand metavar with invoke_without_command"
+    }
+  ]
+}

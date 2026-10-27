@@ -1,0 +1,5 @@
+# Keep the demo's diffs and captured evidence stable across Windows and Unix.
+* text=auto eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf

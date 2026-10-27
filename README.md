@@ -103,7 +103,9 @@ The supported hook client in this release is Claude Code. EngBrain uses its [com
 
 ## Demo
 
-The [demo repository](examples/demo-repo/README.md) reproduces a connection-pool failure. Copy it outside this checkout, initialize it as its own Git repository, install EngBrain, and then run the same check twice, increase the pool limit, and run it once more. The Claude Code hooks should produce a draft for human review.
+The [demo repository](examples/demo-repo/README.md) reproduces the three PRD incidents: connection-pool exhaustion, a dependency-pin mismatch, and an empty environment-variable gotcha. Copy it outside this checkout, initialize it as its own Git repository, and install EngBrain. Run each check twice so it fails, apply the documented one-line fix, and run it once more. The Claude Code hooks produce a draft for human review.
+
+To record without a specific client, `python scripts/offline_demo.py capture all` replays the same hook payloads with real command outcomes, and `python scripts/offline_demo.py drift <incident>` moves an accepted episode from `fresh` to `drifted` or `stale`. The full recording plan is in [VIDEO_DEMO.md](examples/demo-repo/VIDEO_DEMO.md), and the incident catalogue is in [examples/incidents](examples/incidents/README.md).
 
 ## Retrieval evaluation
 
